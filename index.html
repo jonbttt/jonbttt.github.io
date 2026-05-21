@@ -3,934 +3,1083 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jonathan — Open the Pack</title>
+    <title>Jonathan — Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
     <style>
-        @font-face { font-family: 'MPlantin';     src: url("fonts/mplantin.ttf")           format("truetype"); }
-        @font-face { font-family: 'Beleren Bold'; src: url("fonts/beleren-bold_P1.01.ttf") format("truetype"); }
-
-        :root {
-            --gold:       #c9a84c;
-            --gold-light: #f0d080;
-            --darker:     #1a0f06;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'MPlantin', Georgia, serif;
-            background: var(--darker);
-            color: #e8d8b0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            background: url('img/table.jpg') center center / cover no-repeat;
-            filter: brightness(0.55) saturate(0.7) blur(1.5px);
-            pointer-events: none;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 1;
-            mix-blend-mode: multiply;
-        }
-
-        /* ═══ PLAYMAT ═══ */
-        #landing {
-            position: relative;
-            z-index: 2;
-            width: min(90vw, calc(90vh * 16 / 10));
-            height: min(90vh, calc(90vw * 10 / 16));
-            flex-shrink: 0;
-        }
-
-        #playmat {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: fill;
-            border-radius: 6%;
-            box-shadow: 0 35px 80px rgba(0,0,0,0.95), 0 0 0 1px rgba(201,168,76,0.15);
-            display: block;
-            user-select: none;
-            -webkit-user-drag: none;
-        }
-
-        #landing::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 6%;
-            background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.45) 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* ═══ PACK SCENE ═══ */
-        #pack-scene {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.6rem;
-            perspective: 900px;
-            animation: fadeUp 0.9s ease both;
-            user-select: none;
-        }
-
-        #pack-wrapper {
-            position: relative;
-            width: clamp(140px, 15vw, 220px);
-            aspect-ratio: 3 / 4.2;
-            transform-style: preserve-3d;
-            transition: transform 0.08s ease-out;
-        }
-
-        #pack-img {
-            width: 100%;
-            height: 100%;
-            display: block;
-            border-radius: 8px;
-            object-fit: contain;
-            user-select: none;
-            -webkit-user-drag: none;
-            position: relative;
-            z-index: 1;
-        }
-
-        #pack-shine {
-            position: absolute;
-            inset: 0;
-            border-radius: 8px;
-            pointer-events: none;
-            z-index: 2;
-            mix-blend-mode: screen;
-            transition: background 0.05s;
-        }
-
-        #pack-shine.idle { animation: idleShimmer 4s ease-in-out infinite; }
-
-        @keyframes idleShimmer {
-            0%   { background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.12) 0%, rgba(201,168,76,0.1) 25%, transparent 55%); }
-            25%  { background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.15) 0%, rgba(120,200,255,0.1) 25%, transparent 55%); }
-            50%  { background: radial-gradient(circle at 60% 70%, rgba(255,255,255,0.12) 0%, rgba(201,168,76,0.12) 25%, transparent 55%); }
-            75%  { background: radial-gradient(circle at 25% 65%, rgba(255,255,255,0.14) 0%, rgba(200,150,255,0.08) 25%, transparent 55%); }
-            100% { background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.12) 0%, rgba(201,168,76,0.1) 25%, transparent 55%); }
-        }
-
-        /* cut zone */
-        #cut-zone {
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 20%;
-            z-index: 10;
-            cursor: crosshair;
-            border-radius: 8px 8px 0 0;
-        }
-
-        #cut-indicator {
-            position: absolute;
-            inset: 0;
-            border-radius: 8px 8px 0 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        #cut-indicator::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -60%; width: 60%; height: 100%;
-            background: linear-gradient(90deg, transparent 0%, rgba(201,168,76,0) 20%, rgba(201,168,76,0.6) 50%, rgba(255,240,150,0.9) 55%, rgba(201,168,76,0.6) 60%, rgba(201,168,76,0) 80%, transparent 100%);
-            animation: sweepLine 2s ease-in-out infinite;
-            filter: blur(1px);
-        }
-
-        #cut-indicator::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0; height: 1.5px;
-            background: repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(201,168,76,0.7) 4px, rgba(201,168,76,0.7) 8px);
-            animation: dashPulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes sweepLine { 0%{left:-60%} 100%{left:120%} }
-        @keyframes dashPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
-
-        #cut-glow {
-            position: absolute;
-            top: 0; left: 0;
-            width: 40px; height: 100%;
-            pointer-events: none;
-            z-index: 11;
-            display: none;
-            transform: translateX(var(--gx, 0px));
-            background: radial-gradient(ellipse at center, rgba(255,230,100,0.95) 0%, rgba(201,168,76,0.5) 40%, transparent 70%);
-            filter: blur(3px);
-            border-radius: 50%;
-        }
-
-        #cut-progress-wrap {
-            position: absolute;
-            bottom: -6px; left: 10%; right: 10%;
-            height: 3px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        #cut-progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, rgba(201,168,76,0.4), rgba(255,240,150,1), rgba(201,168,76,0.4));
-            border-radius: 2px;
-            transition: width 0.05s linear;
-            box-shadow: 0 0 8px rgba(201,168,76,0.8);
-        }
-
-        @keyframes shake {
-            0%  {transform:rotate(0deg) scale(1)}
-            20% {transform:rotate(-3deg) scale(1.03)}
-            40% {transform:rotate(3deg)  scale(1.06)}
-            60% {transform:rotate(-2deg) scale(1.04)}
-            80% {transform:rotate(1deg)  scale(1.02)}
-            100%{transform:rotate(0deg) scale(1)}
-        }
-
-        #tear-top, #tear-bottom { position: fixed; pointer-events: none; z-index: 50; overflow: hidden; }
-
-        #golden-burst {
-            position: fixed; pointer-events: none; z-index: 60;
-            border-radius: 50%; width: 0; height: 0;
-            background: radial-gradient(circle, rgba(255,230,80,0.9) 0%, rgba(201,168,76,0.6) 30%, rgba(201,168,76,0) 70%);
-            opacity: 0;
-        }
-
-        #golden-burst.burst { animation: goldenBurst 0.6s ease-out forwards; }
-
-        @keyframes goldenBurst {
-            0%  { width:0; height:0; opacity:0.9; }
-            100%{ width:600px; height:600px; opacity:0; }
-        }
-
-        /* ═══ CARDS ON MAT ═══ */
-        .card {
-            position: absolute;
-            z-index: 3;
-            width: 14%;
-            aspect-ratio: 5 / 7;
-            cursor: pointer;
-            opacity: 0;
-            pointer-events: none;
-            /* resting rotation comes from inline --r, applied by JS */
-            transform-origin: center center;
-            filter: drop-shadow(0 6px 18px rgba(0,0,0,0.8));
-            /* transition handles BOTH the rotate and scale smoothly */
-            transition: opacity 0.4s ease, transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.3s ease;
-        }
-
-        .card.landed {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* hovered state — JS adds/removes this class */
-        .card.hovered {
-            transform: rotate(0deg) scale(1.08) translateY(-8px) !important;
-            z-index: 10;
-            filter: drop-shadow(0 16px 36px rgba(0,0,0,0.95));
-        }
-
-        .card-front img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            border-radius: 4.5%;
-        }
-
-        /* ═══ CARD DETAIL OVERLAY ═══ */
-        #overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #overlay.active { display: flex; }
-
-        #overlay-bg {
-            position: absolute;
-            inset: 0;
-            backdrop-filter: blur(18px) brightness(0.35);
-            -webkit-backdrop-filter: blur(18px) brightness(0.35);
-            cursor: pointer;
-        }
-
-        #overlay-inner {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: stretch;
-            gap: 0;
-            width: min(900px, 92vw);
-            height: min(580px, 85vh);
-            animation: overlayIn 0.4s cubic-bezier(0.2, 0, 0, 1) both;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 40px 120px rgba(0,0,0,0.9), 0 0 0 1px rgba(201,168,76,0.2);
-        }
-
-        @keyframes overlayIn {
-            from { opacity: 0; transform: scale(0.88) translateY(20px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        #overlay-card-side {
-            width: 42%;
-            flex-shrink: 0;
-            background: #080604;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2.5rem;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        #overlay-card-side::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at 50% 50%, #1a0e04 0%, transparent 80%);
-            pointer-events: none;
-        }
-
-        #flip-hint {
-            position: absolute;
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.6rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: rgba(201,168,76,0.5);
-            white-space: nowrap;
-            animation: pulse 2.5s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        #overlay-card-3d {
-            width: 100%;
-            max-width: 220px;
-            aspect-ratio: 5 / 7;
-            perspective: 800px;
-            position: relative;
-            z-index: 1;
-        }
-
-        #overlay-card-inner {
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.7s cubic-bezier(0.4,0,0.2,1);
-            position: relative;
-        }
-
-        #overlay-card-inner.flipped { transform: rotateY(180deg); }
-
-        #overlay-card-front, #overlay-card-back-face {
-            position: absolute;
-            inset: 0;
-            backface-visibility: hidden;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
-        }
-
-        #overlay-card-front img,
-        #overlay-card-back-face img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            border-radius: 14px;
-        }
-
-        #overlay-card-back-face { transform: rotateY(180deg); }
-
-        #overlay-card-shine {
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            pointer-events: none;
-            z-index: 2;
-            mix-blend-mode: screen;
-            transition: background 0.06s;
-        }
-
-        #overlay-info-side {
-            flex: 1;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        #overlay-info-side::-webkit-scrollbar { width: 4px; }
-        #overlay-info-side::-webkit-scrollbar-track { background: #f0f0f0; }
-        #overlay-info-side::-webkit-scrollbar-thumb { background: #c9a84c; border-radius: 2px; }
-
-        #overlay-info-top {
-            padding: 1.8rem 2rem 1.2rem;
-            border-bottom: 1px solid #eee;
-            flex-shrink: 0;
-        }
-
-        #overlay-card-label {
-            font-size: 0.65rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: #999;
-            margin-bottom: 0.4rem;
-            font-family: 'Beleren Bold', serif;
-        }
-
-        #overlay-card-name {
-            font-family: 'Beleren Bold', serif;
-            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-            color: #1a0e04;
-            letter-spacing: 0.04em;
-            line-height: 1.1;
-        }
-
-        #overlay-card-type {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 0.3rem;
-            font-style: italic;
-        }
-
-        #overlay-info-body {
-            padding: 1.4rem 2rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-        }
-
-        .info-section-label {
-            font-family: 'Beleren Bold', serif;
-            font-size: 0.6rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 0.4rem;
-        }
-
-        .info-section-text {
-            font-size: 0.82rem;
-            line-height: 1.7;
-            color: #333;
-        }
-
-        .info-section-text strong { color: #1a0e04; }
-
-        .info-divider {
-            height: 1px;
-            background: linear-gradient(90deg, var(--gold), transparent);
-            opacity: 0.3;
-        }
-
-        .info-why {
-            font-size: 0.78rem;
-            line-height: 1.75;
-            color: #555;
-            font-style: italic;
-            border-left: 2px solid var(--gold);
-            padding-left: 0.9rem;
-            opacity: 0.9;
-        }
-
-        #overlay-tags {
-            padding: 1rem 2rem 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.4rem;
-            border-top: 1px solid #eee;
-            flex-shrink: 0;
-        }
-
-        .overlay-tag {
-            font-size: 0.6rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #6b4f1a;
-            border: 1px solid rgba(201,168,76,0.5);
-            border-radius: 3px;
-            padding: 0.2rem 0.5rem;
-            background: rgba(201,168,76,0.08);
-            font-family: 'Beleren Bold', serif;
-        }
-
-        #overlay-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            z-index: 10;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-            backdrop-filter: blur(4px);
-        }
-
-        #overlay-close:hover { background: rgba(255,255,255,0.25); }
-
-        .particle {
-            position: fixed;
-            pointer-events: none;
-            z-index: 200;
-            animation: particleFly var(--dur,.8s) ease-out forwards;
-        }
-
-        @keyframes particleFly {
-            0%  { transform:translate(0,0) scale(1) rotate(0deg); opacity:1; }
-            100%{ transform:translate(var(--tx),var(--ty)) scale(0) rotate(var(--rot,180deg)); opacity:0; }
-        }
-
-        @keyframes fadeUp {
-            from{opacity:0;transform:translate(-50%,calc(-50% + 20px))}
-            to  {opacity:1;transform:translate(-50%,-50%)}
-        }
-
-        @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:.9} }
-
-        ::-webkit-scrollbar{width:5px}
-        ::-webkit-scrollbar-track{background:var(--darker)}
-        ::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.25);border-radius:3px}
+/* ─── Reset ─── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg:     #0d0a07;
+    --purple: #731fa1;
+    --white:  #ffffff;
+    --font:   'Averia Serif Libre', Georgia, serif;
+}
+
+html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--white);
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ═══════════════════════════════
+   SCREEN 1 — PACK
+═══════════════════════════════ */
+#screen-pack {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    gap: 1.4rem;
+    z-index: 1;
+}
+
+#pack-container {
+    position: relative;
+    width: clamp(150px, 16vw, 220px);
+    aspect-ratio: 3 / 4.2;
+}
+
+#pack-img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    z-index: 1;
+}
+
+/* Foil layers */
+#pack-foil-rainbow {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    z-index: 2;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0.15;
+    background: linear-gradient(
+        135deg,
+        hsla(0,100%,70%,1) 0%,
+        hsla(52,100%,70%,1) 14%,
+        hsla(120,100%,70%,1) 28%,
+        hsla(180,100%,70%,1) 43%,
+        hsla(240,100%,70%,1) 57%,
+        hsla(290,100%,70%,1) 71%,
+        hsla(320,100%,70%,1) 85%,
+        hsla(360,100%,70%,1) 100%
+    );
+    transition: transform 0.15s ease;
+}
+
+#pack-foil-highlight {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    z-index: 3;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 35%, transparent 65%);
+}
+
+/* Drag zone — top 20% */
+#pack-drag-zone {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 20%;
+    z-index: 10;
+    cursor: crosshair;
+    border-radius: 8px 8px 0 0;
+}
+
+#pack-drag-glow {
+    position: absolute;
+    top: 0;
+    width: 52px; height: 100%;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(115,31,161,0.95) 0%, rgba(115,31,161,0.4) 45%, transparent 75%);
+    filter: blur(5px);
+    pointer-events: none;
+    display: none;
+    z-index: 11;
+}
+
+#pack-progress {
+    position: absolute;
+    bottom: -7px; left: 8%; right: 8%;
+    height: 2px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 1px;
+    overflow: hidden;
+    display: none;
+    z-index: 11;
+}
+
+#pack-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(115,31,161,0.5), #9b4fd6, #c090f0);
+    border-radius: 1px;
+    box-shadow: 0 0 10px rgba(115,31,161,0.9);
+    transition: width 0.04s linear;
+}
+
+#pack-hint {
+    font-family: var(--font);
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    color: var(--white);
+    opacity: 0.28;
+    pointer-events: none;
+    margin-top: 0.2rem;
+}
+
+/* Tear portal */
+#tear-top, #tear-bottom {
+    position: fixed;
+    pointer-events: none;
+    z-index: 80;
+    overflow: hidden;
+}
+
+/* Particle */
+.particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 90;
+    animation: particleFly var(--dur, 0.7s) ease-out forwards;
+}
+
+@keyframes particleFly {
+    0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--rot,200deg)); opacity: 0; }
+}
+
+/* Scene flash */
+#scene-flash {
+    position: fixed;
+    inset: 0;
+    background: var(--purple);
+    z-index: 500;
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+}
+
+/* ═══════════════════════════════
+   SCREEN 2 — CAROUSEL
+═══════════════════════════════ */
+#screen-carousel {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: none;
+    overflow: hidden;
+}
+
+#carousel-stage {
+    position: absolute;
+    inset: 0;
+    bottom: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+    perspective-origin: 50% 50%;
+    cursor: grab;
+}
+
+#carousel-stage.grabbing { cursor: grabbing; }
+
+#carousel-inner {
+    position: relative;
+    width: 0; height: 0;
+    transform-style: preserve-3d;
+}
+
+.c-card {
+    position: absolute;
+    width: clamp(155px, 17vw, 230px);
+    aspect-ratio: 5 / 7;
+    border-radius: 4.5%;
+    overflow: hidden;
+    cursor: pointer;
+    will-change: transform, opacity;
+    -webkit-user-drag: none;
+    backface-visibility: hidden;
+    box-shadow: 0 20px 70px rgba(0,0,0,0.65);
+}
+
+.c-card img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    -webkit-user-drag: none;
+}
+
+/* Label area */
+#card-label {
+    position: absolute;
+    bottom: 44px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+#card-label-typeline {
+    font-family: var(--font);
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--white);
+    opacity: 0.4;
+    margin-bottom: 0.35rem;
+    font-variant: small-caps;
+}
+
+#card-label-name {
+    font-family: var(--font);
+    font-size: clamp(1.3rem, 2.4vw, 2.1rem);
+    font-weight: 400;
+    color: var(--white);
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+}
+
+/* Contact links */
+#contact-links {
+    position: absolute;
+    bottom: 26px;
+    right: 32px;
+    display: flex;
+    gap: 1.6rem;
+}
+
+#contact-links a {
+    font-family: var(--font);
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--white);
+    opacity: 0.35;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+#contact-links a:hover { opacity: 1; }
+
+/* ═══════════════════════════════
+   OVERLAY
+═══════════════════════════════ */
+#overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: none;
+}
+
+#overlay.active { display: flex; }
+
+#overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,3,2,0.75);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    cursor: pointer;
+}
+
+#overlay-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    animation: overlayFadeIn 0.3s ease both;
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Left — card */
+#overlay-card-side {
+    width: 45%;
+    flex-shrink: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+#overlay-card-3d {
+    position: relative;
+    width: clamp(170px, 20vw, 280px);
+    aspect-ratio: 5 / 7;
+    perspective: 800px;
+    z-index: 1;
+}
+
+#overlay-card-inner {
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    will-change: transform;
+}
+
+#overlay-card-inner.flipped { transform: rotateY(180deg); }
+
+#overlay-card-front, #overlay-card-back-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 4.5%;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.85);
+}
+
+#overlay-card-front img,
+#overlay-card-back-face img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    -webkit-user-drag: none;
+}
+
+#overlay-card-back-face { transform: rotateY(180deg); }
+
+#overlay-card-shine {
+    position: absolute;
+    inset: 0;
+    border-radius: 4.5%;
+    pointer-events: none;
+    z-index: 2;
+    mix-blend-mode: screen;
+}
+
+#overlay-flip-hint {
+    position: absolute;
+    bottom: 1.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font);
+    font-size: 0.56rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    white-space: nowrap;
+    animation: pulse 2.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse { 0%,100%{opacity:0.2} 50%{opacity:0.65} }
+
+/* Right — info */
+#overlay-info-side {
+    flex: 1;
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 3.5rem 3.2rem 3rem;
+    cursor: default;
+}
+
+#overlay-info-side::-webkit-scrollbar { width: 3px; }
+#overlay-info-side::-webkit-scrollbar-thumb { background: rgba(115,31,161,0.25); border-radius: 2px; }
+
+#overlay-card-name {
+    font-family: var(--font);
+    font-size: clamp(1.7rem, 2.8vw, 2.6rem);
+    font-weight: 700;
+    color: #0d0a07;
+    line-height: 1.05;
+    margin-bottom: 0.45rem;
+}
+
+#overlay-type-line {
+    font-family: var(--font);
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-variant: small-caps;
+    color: #0d0a07;
+    opacity: 0.3;
+    margin-bottom: 2.2rem;
+}
+
+.overlay-section-text {
+    font-family: var(--font);
+    font-size: 0.87rem;
+    line-height: 1.85;
+    color: #1e1a17;
+    margin: 0;
+}
+
+.overlay-divider {
+    height: 1px;
+    background: var(--purple);
+    opacity: 0.2;
+    margin: 1.8rem 0;
+    flex-shrink: 0;
+}
+
+.overlay-section-why {
+    font-family: var(--font);
+    font-size: 0.85rem;
+    line-height: 1.9;
+    color: #2e2a27;
+    font-style: italic;
+    border-left: 2px solid var(--purple);
+    padding-left: 1.1rem;
+    margin: 0;
+}
+
+/* Scrollbar for body */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(115,31,161,0.3); border-radius: 2px; }
     </style>
 </head>
 <body>
 
-    <div id="golden-burst"></div>
-
-    <!-- ═══ CARD DETAIL OVERLAY ═══ -->
-    <div id="overlay">
-        <div id="overlay-bg"></div>
-        <div id="overlay-inner">
-            <div id="overlay-card-side">
-                <div id="overlay-card-3d">
-                    <div id="overlay-card-inner">
-                        <div id="overlay-card-front">
-                            <img id="overlay-front-img" src="" alt="" />
-                            <div id="overlay-card-shine"></div>
-                        </div>
-                        <div id="overlay-card-back-face">
-                            <img src="img/cardback.png" alt="Card Back" />
-                        </div>
-                    </div>
-                </div>
-                <p id="flip-hint">click to flip</p>
+<!-- ═══ SCREEN 1: PACK ═══ -->
+<div id="screen-pack">
+    <div id="pack-container">
+        <img id="pack-img" src="img/pack.png" alt="Booster Pack" draggable="false" />
+        <div id="pack-foil-rainbow"></div>
+        <div id="pack-foil-highlight"></div>
+        <div id="pack-drag-zone">
+            <div id="pack-drag-glow"></div>
+            <div id="pack-progress">
+                <div id="pack-progress-bar"></div>
             </div>
-
-            <div id="overlay-info-side">
-                <div id="overlay-info-top">
-                    <div id="overlay-card-label">Card</div>
-                    <div id="overlay-card-name"></div>
-                    <div id="overlay-card-type"></div>
-                </div>
-                <div id="overlay-info-body"></div>
-                <div id="overlay-tags"></div>
-            </div>
-
-            <button id="overlay-close">✕</button>
         </div>
     </div>
+    <p id="pack-hint">slide to open</p>
+</div>
 
-    <!-- ═══ LANDING ═══ -->
-    <section id="landing">
-        <img id="playmat" src="img/playmat.png" alt="Playmat" draggable="false" />
+<!-- ═══ SCREEN 2: CAROUSEL ═══ -->
+<div id="screen-carousel">
+    <div id="carousel-stage">
+        <div id="carousel-inner"></div>
+    </div>
+    <div id="card-label">
+        <div id="card-label-typeline"></div>
+        <div id="card-label-name"></div>
+    </div>
+    <div id="contact-links">
+        <a href="https://github.com/jonbttt" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/jonbttt" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://deckbox.org/users/jonbttt" target="_blank" rel="noopener">Deckbox</a>
+    </div>
+</div>
 
-        <!-- ROW 1 -->
-        <div class="card" style="left:27%;  top:9%;"  data-index="0" data-r="-13">
-            <div class="card-front"><img src="img/card-1.png" alt="Jonathan BT" /></div>
-        </div>
-        <div class="card" style="left:44%; top:6%;"  data-index="1" data-r="8">
-            <div class="card-front"><img src="img/card-2.png" alt="Field Experience" /></div>
-        </div>
-        <div class="card" style="left:60%; top:12%;"  data-index="2" data-r="-5">
-            <div class="card-front"><img src="img/card-3.png" alt="Side Projects" /></div>
-        </div>
-
-        <!-- ROW 2 -->
-        <div class="card" style="left:23%; top:42%;" data-index="3" data-r="15">
-            <div class="card-front"><img src="img/card-4.png" alt="Jonathan, Iron" /></div>
-        </div>
-        <div class="card" style="left:46%; top:44%;" data-index="4" data-r="-17">
-            <div class="card-front"><img src="img/card-5.png" alt="My Mox" /></div>
-        </div>
-        <div class="card" style="left:62%; top:41%;" data-index="5" data-r="11">
-            <div class="card-front"><img src="img/card-6.png" alt="Wanderlust" /></div>
-        </div>
-
-        <!-- PACK -->
-        <div id="pack-scene">
-            <div id="pack-wrapper">
-                <img id="pack-img" src="img/pack.png" alt="Booster Pack" draggable="false" />
-                <div id="pack-shine" class="idle"></div>
-                <div id="cut-zone">
-                    <div id="cut-indicator"></div>
-                    <div id="cut-glow"></div>
-                    <div id="cut-progress-wrap"><div id="cut-progress-bar"></div></div>
+<!-- ═══ OVERLAY ═══ -->
+<div id="overlay">
+    <div id="overlay-backdrop"></div>
+    <div id="overlay-inner">
+        <div id="overlay-card-side">
+            <div id="overlay-card-3d">
+                <div id="overlay-card-inner">
+                    <div id="overlay-card-front">
+                        <img id="overlay-front-img" src="" alt="" />
+                        <div id="overlay-card-shine"></div>
+                    </div>
+                    <div id="overlay-card-back-face">
+                        <img src="img/cardback.png" alt="Card Back" />
+                    </div>
                 </div>
             </div>
+            <p id="overlay-flip-hint">click to flip</p>
         </div>
-    </section>
+        <div id="overlay-info-side">
+            <div id="overlay-card-name"></div>
+            <div id="overlay-type-line"></div>
+            <p id="overlay-section1" class="overlay-section-text"></p>
+            <div class="overlay-divider"></div>
+            <p id="overlay-section2" class="overlay-section-why"></p>
+        </div>
+    </div>
+</div>
 
-    <div id="tear-top"></div>
-    <div id="tear-bottom"></div>
+<!-- Tear portal + flash -->
+<div id="tear-top"></div>
+<div id="tear-bottom"></div>
+<div id="scene-flash"></div>
 
-    <script>
-    // ═══ CARD DATA ═══
-    const CARD_DATA = [
-        {
-            img:   'img/card-1.png',
-            label: 'Legendary Creature — Human Artificer',
-            name:  'Jonathan BT',
-            type:  '{W}{U}{B} — Esper · Mythic Rare',
-            sections: [
-                { heading: 'About Me', text: 'Final-year Computer Science student at UNSW, specialising in Security Engineering. Graduating December 2026. Based in Sydney, originally from Indonesia.<br><br>Software Engineer at The Golfer Network, building full-stack products. Previously an AI Engineer at PT Wide Technologies in Indonesia. Targeting graduate roles in cybersecurity and software engineering.' },
-                { heading: 'Why This Card', text: 'Esper is the MTG shard that blends White, Blue, and Black: control, intellect, and ambition. A Legendary Creature because there\'s only one of me. The Human Artificer typeline felt right: I build things, I engineer systems, I craft solutions.', quote: true }
-            ],
-            tags: ['Sydney', 'UNSW', 'Security', 'Grad 2026', 'Indonesia']
-        },
-        {
-            img:   'img/card-2.png',
-            label: 'Instant — Career',
-            name:  'Field Experience',
-            type:  '{2}{U} — Rare',
-            sections: [
-                { heading: 'Experience', text: '<strong>The Golfer Network</strong> — Software Engineer, Sydney. Full-stack development, significantly reduced backend delivery time in production.<br><br><strong>PT Wide Technologies</strong> — AI Engineer, Indonesia. Built computer vision and machine learning models.<br><br>Also: COMP3900 capstone — Meta Quest 3 mixed reality app for food chemistry education in Unity. SIEM homelab with ELK Stack, OTX AlienVault threat intelligence, and Jira integration.' },
-                { heading: 'Why This Card', text: 'Instant speed — because real engineering is reactive. You don\'t always get to plan; you respond, you ship, you fix. The blue mana cost represents the intelligence and precision required.', quote: true }
-            ],
-            tags: ['Full Stack', 'AI', 'Unity', 'Next.js', 'Docker', 'Python', 'ELK']
-        },
-        {
-            img:   'img/card-3.png',
-            label: 'Sorcery — Build',
-            name:  'Side Projects',
-            type:  '{1}{B}{R} — Rare',
-            sections: [
-                { heading: 'Projects', text: '<strong>rk-veil</strong> — A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on kernel v6. Named for its stealth — a veil over the system.<br><br><strong>Home Lab SIEM</strong> — ELK Stack with OTX AlienVault threat intelligence feeds and Jira ticketing integration. A full detection engineering pipeline at home.<br><br><strong>MR Sandbox</strong> — Meta Quest 3 mixed reality chemistry education app. Unity MonoBehaviour architecture, hand tracking, wrist menu system.' },
-                { heading: 'Why This Card', text: 'Sorcery because these projects take time and planning — you can\'t rush a rootkit. Black and Red mana: ambition and aggression. "Create a 3/3 token with deathtouch" — good security tooling is dangerous if used against you. The deathtouch represents how offensive techniques inform defensive thinking.', quote: true }
-            ],
-            tags: ['Linux', 'Kernel', 'ELK', 'Unity', 'Quest 3', 'C', 'C#', 'Python']
-        },
-        {
-            img:   'img/card-4.png',
-            label: 'Legendary Creature — Human Warrior',
-            name:  'Jonathan, Iron-Willed',
-            type:  '{R}{G} — Uncommon',
-            sections: [
-                { heading: 'Lifting', text: 'Competitive powerlifter, ~72kg weight class. About 2.5 years of serious training. Currently in a cutting phase — tracking macros closely, optimising nutrition around session timing, managing sleep for recovery.<br><br>Main lifts: Squat, Bench, Deadlift. Current sticking point is the stretch reflex out of the hole on squat — working on it consistently. Accessory work includes hack squats and lat development based on recent EMG research.' },
-                { heading: 'Why This Card', text: 'Red and Green are the MTG colours of physicality, instinct, and raw strength — the classic combination for warriors. Legendary Creature because this is another face card, another side of me that\'s just as defining as the tech work. The gym selfie felt honest. No staged platform shot — just showing up.', quote: true }
-            ],
-            tags: ['Powerlifting', '72kg', 'Cutting', 'Squat', 'Bench', 'Deadlift']
-        },
-        {
-            img:   'img/card-5.png',
-            label: 'Artifact — Passion',
-            name:  'My Mox',
-            type:  '{0} — Rare',
-            sections: [
-                { heading: 'MTG', text: 'Avid Magic: The Gathering player. Mainly Commander with friends, and MTG Arena on downtime. Commander is where the game shines — long games, creative decks, social politics.<br><br>Currently running 5 decks. Check them out at <strong>moxfield.com/users/jonbttt</strong><br><br>Deck 1 · Deck 2 · Deck 3 · Deck 4 · Deck 5 — fill in your commanders here.' },
-                { heading: 'Why This Card', text: 'A Mox is one of the most powerful artifacts in MTG history — zero cost, immediate value, a collector\'s dream. Naming it "My Mox" is a bit of self-aware humour: this is my most prized personal card, representing a game I genuinely love. The {0} casting cost felt right — this part of me costs nothing to show up.', quote: true }
-            ],
-            tags: ['Commander', 'Arena', 'Moxfield', 'EDH']
-        },
-        {
-            img:   'img/card-6.png',
-            label: 'Enchantment — Wanderlust',
-            name:  'Boundless Horizon',
-            type:  '{G}{U} — Uncommon',
-            sections: [
-                { heading: 'Travel', text: 'Countries visited: TBD · TBD · TBD<br><br><strong>Favourite destination:</strong> TBD<br><strong>Most memorable moment:</strong> TBD<br><strong>Next on the list:</strong> TBD<br><br>Travel has been part of life from the start — growing up between Indonesia and visiting across Asia and beyond. Always looking for the next stamp.' },
-                { heading: 'Why This Card', text: 'Green and Blue in MTG represent exploration, growth, and wisdom — the colours of someone who moves through the world with curiosity. Enchantment because travel isn\'t a one-time event, it\'s a persistent effect on who you are. Every place you visit changes you a little.', quote: true }
-            ],
-            tags: ['Travel', 'Exploration', 'Asia', 'TBD countries']
+<script>
+'use strict';
+
+/* ─────────────────────────────────────────────
+   CARD DATA
+───────────────────────────────────────────── */
+const CARDS = [
+    {
+        img: 'img/card-1.png',
+        name: 'Arcum Dagsson',
+        typeLine: 'Legendary Creature — About me',
+        about: 'Final-year CS student at UNSW specialising in Security Engineering, graduating December 2026. Software Engineer at The Golfer Network. Previously AI Engineer at PT Wide Technologies in Indonesia. Targeting grad roles in cybersecurity and tech risk advisory.',
+        why: 'Arcum Dagsson dismantles existing artifacts to tutor out more powerful ones from his library. That is exactly what security engineering is — you take apart systems to understand them, then build something more dangerous. The blue mana cost, the artificer identity, the methodical destruction-as-construction. It fit immediately.'
+    },
+    {
+        img: 'img/card-2.png',
+        name: 'Snapcaster Mage',
+        typeLine: 'Instant — Field Experience',
+        about: 'Software Engineer at The Golfer Network building full-stack products. Previously AI Engineer at PT Wide Technologies. Projects include a Meta Quest 3 mixed reality app in Unity, a home lab SIEM with ELK Stack and OTX AlienVault, and a Linux kernel rootkit.',
+        why: 'Snapcaster Mage gives flashback to instants and sorceries — he makes past experience immediately useful again. Every role I have taken has fed directly into the next one. The ability to reach back into what you have already done and cast it again at the right moment is what good engineering experience actually looks like.'
+    },
+    {
+        img: 'img/card-3.png',
+        name: 'Goblin Engineer',
+        typeLine: 'Creature — Side Projects',
+        about: 'rk-veil — Linux kernel module rootkit, syscall hooking and process hiding on kernel v6. Home Lab SIEM — ELK Stack with OTX AlienVault threat intelligence and Jira integration. MR Sandbox — Meta Quest 3 mixed reality chemistry education app in Unity.',
+        why: 'Goblin Engineer puts an artifact into the graveyard and recurs a different one from it. Build something, break it, pull out something more dangerous. That loop of building, breaking, and rebuilding is exactly how side projects work — especially in security. The workshop chaos of the art is accurate.'
+    },
+    {
+        img: 'img/card-4.png',
+        name: 'Zilortha, Strength Incarnate',
+        typeLine: 'Legendary Creature — Lifting',
+        about: 'Competitive powerlifter, 72kg weight class, about 2.5 years of serious training. Currently cutting. Tracking macros, optimising sleep, dialling in nutrition around training. Main lifts squat, bench, deadlift.',
+        why: 'Zilortha makes your creatures assign combat damage using power rather than toughness. It does not matter how much you can absorb — what matters is how hard you hit. That is the mindset of powerlifting. The card is a 10/10. The art is an unstoppable dinosaur. There is no subtext.'
+    },
+    {
+        img: 'img/card-5.png',
+        name: 'Mox Amber',
+        typeLine: 'Artifact — MTG',
+        about: 'Avid MTG player, mainly Commander with friends and Arena on downtime. Currently running 5 decks. Moxfield: moxfield.com/users/jonbttt',
+        why: 'A Mox costs nothing and generates value immediately. Mox Amber specifically taps for mana if you control a legendary creature or planeswalker — it only works when something meaningful is already in play. MTG is the zero-cost thing I show up for that only works because everything else is already there.'
+    },
+    {
+        img: 'img/card-6.png',
+        name: 'Explore',
+        typeLine: 'Sorcery — Travel',
+        about: 'Travelled across Southeast Asia, East Asia, and beyond. Originally from Indonesia, based in Sydney. Always looking for the next stamp.',
+        why: 'Explore lets you play an extra land and draws a card if you cannot — it makes the unknown productive. Every place changes how you see the next one. The mechanic of moving further and gaining something regardless of what you find is exactly how travel works.'
+    }
+];
+
+/* ─────────────────────────────────────────────
+   SCREEN 1 — PACK OPENING
+───────────────────────────────────────────── */
+const packContainer  = document.getElementById('pack-container');
+const packImg        = document.getElementById('pack-img');
+const packFoilR      = document.getElementById('pack-foil-rainbow');
+const packFoilH      = document.getElementById('pack-foil-highlight');
+const packDragZone   = document.getElementById('pack-drag-zone');
+const packDragGlow   = document.getElementById('pack-drag-glow');
+const packProgress   = document.getElementById('pack-progress');
+const packProgressBar= document.getElementById('pack-progress-bar');
+const tearTop        = document.getElementById('tear-top');
+const tearBot        = document.getElementById('tear-bottom');
+const sceneFlash     = document.getElementById('scene-flash');
+
+let packOpened  = false;
+let packDragging= false;
+let packDragX0  = 0;
+let packDragCur = 0;
+const PACK_THRESHOLD = 0.70;
+
+/* Foil idle animation */
+let idleT    = 0;
+let idleRAF  = null;
+let isIdle   = true;
+let idleTimer= null;
+
+function updatePackFoil(mx, my) {
+    const hue = (mx / 100 * 280 + my / 100 * 120) % 360;
+    packFoilH.style.background =
+        `radial-gradient(circle at ${mx}% ${my}%,` +
+        `rgba(255,255,255,0.26) 0%,` +
+        `hsla(${hue},100%,75%,0.13) 22%,` +
+        `hsla(${(hue+80)%360},100%,70%,0.08) 42%,` +
+        `transparent 64%)`;
+    packFoilR.style.transform = `rotate(${mx * 1.4}deg)`;
+}
+
+function idleTick() {
+    if (!isIdle || packOpened) return;
+    idleT += 0.007;
+    const mx = 50 + 36 * Math.sin(idleT * 1.15);
+    const my = 50 + 28 * Math.sin(idleT * 0.73 + 0.6);
+    updatePackFoil(mx, my);
+    idleRAF = requestAnimationFrame(idleTick);
+}
+
+function goIdle() {
+    isIdle = true;
+    cancelAnimationFrame(idleRAF);
+    idleRAF = requestAnimationFrame(idleTick);
+}
+
+function stopIdle() {
+    isIdle = false;
+    cancelAnimationFrame(idleRAF);
+}
+
+goIdle();
+
+document.addEventListener('mousemove', (e) => {
+    if (packOpened) return;
+    const rect = packContainer.getBoundingClientRect();
+    const mx = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+    const my = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
+
+    stopIdle();
+    updatePackFoil(mx, my);
+
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(goIdle, 1600);
+});
+
+/* Drag mechanic */
+function packDragStart(x) {
+    if (packOpened) return;
+    packDragging = true;
+    packDragX0   = x;
+    packDragCur  = x;
+    packDragGlow.style.display = 'block';
+    packProgress.style.display = 'block';
+    stopIdle();
+}
+
+function packDragMove(x) {
+    if (!packDragging || packOpened) return;
+    packDragCur = x;
+    const rect  = packContainer.getBoundingClientRect();
+    const relX  = x - rect.left;
+    const prog  = Math.max(0, Math.min(1, (x - packDragX0) / rect.width));
+
+    packDragGlow.style.left = relX + 'px';
+    packProgressBar.style.width = (prog * 100) + '%';
+
+    if (prog >= PACK_THRESHOLD) completePack();
+}
+
+function packDragCancel() {
+    if (!packDragging) return;
+    packDragging = false;
+    packDragGlow.style.display = 'none';
+    packProgress.style.display = 'none';
+    packProgressBar.style.width = '0%';
+    goIdle();
+}
+
+function completePack() {
+    if (packOpened) return;
+    packOpened  = true;
+    packDragging= false;
+    packDragGlow.style.display = 'none';
+
+    const rect = packContainer.getBoundingClientRect();
+    const tearY = rect.top + rect.height * 0.05;
+    const tearX = rect.left + rect.width / 2;
+
+    spawnParticles(tearX, tearY);
+    setTimeout(() => tearOpen(rect), 80);
+}
+
+/* Tear animation */
+function tearOpen(rect) {
+    const src  = packImg.src;
+    const topH = rect.height * 0.05;
+    const botH = rect.height - topH;
+
+    tearTop.style.cssText =
+        `width:${rect.width}px;height:${topH}px;` +
+        `left:${rect.left}px;top:${rect.top}px;` +
+        `border-radius:8px 8px 0 0;` +
+        `transition:transform 0.55s cubic-bezier(.4,0,.2,1),opacity 0.28s ease 0.3s;`;
+    tearTop.innerHTML =
+        `<img src="${src}" style="width:100%;height:${rect.height}px;object-fit:fill;border-radius:8px;" />`;
+
+    tearBot.style.cssText =
+        `width:${rect.width}px;height:${botH}px;` +
+        `left:${rect.left}px;top:${rect.top + topH}px;` +
+        `border-radius:0 0 8px 8px;` +
+        `transition:transform 0.55s cubic-bezier(.4,0,.2,1),opacity 0.28s ease 0.3s;`;
+    tearBot.innerHTML =
+        `<img src="${src}" style="width:100%;height:${rect.height}px;object-fit:fill;border-radius:8px;margin-top:-${topH}px;" />`;
+
+    packImg.style.opacity = '0';
+    packFoilR.style.opacity = '0';
+    packFoilH.style.opacity = '0';
+    packDragZone.style.display = 'none';
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        tearTop.style.transform = `translateY(-${topH + 130}px)`;
+        tearTop.style.opacity   = '0';
+        tearBot.style.transform = `translateY(${botH + 130}px)`;
+        tearBot.style.opacity   = '0';
+    }));
+
+    setTimeout(cutToCarousel, 680);
+}
+
+function cutToCarousel() {
+    tearTop.style.display = 'none';
+    tearBot.style.display = 'none';
+
+    /* Hard scene cut — single purple flash frame */
+    sceneFlash.style.display  = 'block';
+    sceneFlash.style.opacity  = '1';
+    sceneFlash.style.transition = 'none';
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById('screen-pack').style.display = 'none';
+        document.getElementById('screen-carousel').style.display = 'block';
+        sceneFlash.style.transition = 'opacity 0.18s ease-out';
+        sceneFlash.style.opacity    = '0';
+        setTimeout(() => { sceneFlash.style.display = 'none'; }, 200);
+
+        carTarget   = 0;
+        carPosition = 0;
+        carVelocity = 0;
+        buildCarousel();
+        updateCarousel();
+        carSpring();
+    }));
+}
+
+/* Particles — purple + white */
+function spawnParticles(x, y) {
+    const colors = ['#731fa1','#9b4fd6','#c090f0','#ffffff','#e8d4f8'];
+
+    for (let i = 0; i < 28; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const angle = (i / 28) * Math.PI * 2;
+        const dist  = 55 + Math.random() * 170;
+        const size  = 2 + Math.random() * 5;
+        const dur   = (0.45 + Math.random() * 0.55).toFixed(2);
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.cssText =
+            `left:${x}px;top:${y}px;` +
+            `width:${size}px;height:${size * 3.2}px;` +
+            `border-radius:2px;background:${color};` +
+            `--tx:${(Math.cos(angle)*dist).toFixed(1)}px;` +
+            `--ty:${(Math.sin(angle)*dist).toFixed(1)}px;` +
+            `--dur:${dur}s;--rot:${Math.floor(Math.random()*360)}deg;` +
+            `box-shadow:0 0 7px 2px ${color}88;`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), dur * 1000 + 200);
+    }
+
+    for (let i = 0; i < 10; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const angle = Math.random() * Math.PI * 2;
+        const dist  = 28 + Math.random() * 90;
+        const size  = 10 + Math.random() * 18;
+        const dur   = (0.35 + Math.random() * 0.4).toFixed(2);
+        p.style.cssText =
+            `left:${x}px;top:${y}px;` +
+            `width:${size}px;height:${size}px;border-radius:50%;` +
+            `background:radial-gradient(circle,rgba(179,100,240,0.9) 0%,rgba(115,31,161,0.4) 60%,transparent 100%);` +
+            `--tx:${(Math.cos(angle)*dist).toFixed(1)}px;` +
+            `--ty:${(Math.sin(angle)*dist).toFixed(1)}px;` +
+            `--dur:${dur}s;` +
+            `box-shadow:0 0 14px 5px rgba(115,31,161,0.5);`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), dur * 1000 + 200);
+    }
+}
+
+/* Pack drag event wiring */
+packDragZone.addEventListener('mousedown',  (e) => { e.preventDefault(); packDragStart(e.clientX); });
+document.addEventListener('mousemove',      (e) => { if (packDragging) packDragMove(e.clientX); });
+document.addEventListener('mouseup',        ()  => { if (packDragging) packDragCancel(); });
+packDragZone.addEventListener('touchstart', (e) => { e.preventDefault(); packDragStart(e.touches[0].clientX); }, { passive: false });
+document.addEventListener('touchmove',      (e) => { if (packDragging) { e.preventDefault(); packDragMove(e.touches[0].clientX); } }, { passive: false });
+document.addEventListener('touchend',       ()  => { if (packDragging) packDragCancel(); });
+
+/* ─────────────────────────────────────────────
+   SCREEN 2 — 3D CAROUSEL
+───────────────────────────────────────────── */
+const carouselStage = document.getElementById('carousel-stage');
+const carouselInner = document.getElementById('carousel-inner');
+const cardLabel     = document.getElementById('card-label');
+const labelTypeline = document.getElementById('card-label-typeline');
+const labelName     = document.getElementById('card-label-name');
+
+let carPosition = 0;
+let carTarget   = 0;
+let carVelocity = 0;
+let carDragging = false;
+let carDragX0   = 0;
+let carDragY0   = 0;
+let carDragPos0 = 0;
+let carRAF      = null;
+const DRAG_SCALE = 260; /* px per card step */
+
+/* Card config — spacing and depth per offset */
+function cardTransform(offset) {
+    /* offset is float; positive = right of center */
+    const abs = Math.abs(offset);
+
+    /* Horizontal spacing — wider than card width so ±2 clips viewport */
+    const tx = offset * 235;
+
+    /* Depth — push side cards back on Z (parabolic) */
+    const tz = -(abs * abs) * 52;
+
+    /* Rotation */
+    const ry = offset * 25;
+
+    /* Opacity — 0→1, 1→0.75, 2→0.5, clamp beyond */
+    let op;
+    if      (abs <= 1) op = 1 - abs * 0.25;
+    else if (abs <= 2) op = 0.75 - (abs - 1) * 0.25;
+    else               op = Math.max(0, 0.5 - (abs - 2) * 0.5);
+
+    /* Z-index — center card on top */
+    const zi = Math.round(10 - abs * 3);
+
+    return { tx, tz, ry, op, zi };
+}
+
+function buildCarousel() {
+    carouselInner.innerHTML = '';
+    CARDS.forEach((data, i) => {
+        const el = document.createElement('div');
+        el.className    = 'c-card';
+        el.dataset.index= i;
+        const img       = document.createElement('img');
+        img.src         = data.img;
+        img.alt         = data.name;
+        el.appendChild(img);
+        carouselInner.appendChild(el);
+    });
+}
+
+function updateCarousel() {
+    const els = carouselInner.querySelectorAll('.c-card');
+    els.forEach((el, i) => {
+        const offset = i - carPosition;
+        const abs    = Math.abs(offset);
+
+        if (abs > 2.6) {
+            el.style.opacity        = '0';
+            el.style.pointerEvents  = 'none';
+            return;
         }
-    ];
 
-    // ═══ SET INITIAL CARD ROTATIONS ═══
-    // Store rotation as data attribute, apply via JS so we can transition cleanly
-    const cards = Array.from(document.querySelectorAll('.card'));
-    cards.forEach(card => {
-        const r = parseFloat(card.dataset.r) || 0;
-        card.style.transform = `rotate(${r}deg)`;
+        const { tx, tz, ry, op, zi } = cardTransform(offset);
+        el.style.transform      = `translate(-50%,-50%) translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg)`;
+        el.style.opacity        = op;
+        el.style.zIndex         = zi;
+        el.style.pointerEvents  = abs < 2.5 ? 'auto' : 'none';
     });
 
-    // ═══ HOVER — straighten on enter, restore on leave ═══
-    cards.forEach(card => {
-        const r = parseFloat(card.dataset.r) || 0;
+    /* Update label — snap to nearest */
+    const ci = Math.round(carPosition);
+    const clamped = Math.max(0, Math.min(CARDS.length - 1, ci));
+    labelTypeline.textContent = CARDS[clamped].typeLine;
+    labelName.textContent     = CARDS[clamped].name;
 
-        card.addEventListener('mouseenter', () => {
-            if (!card.classList.contains('landed')) return;
-            card.classList.add('hovered');
-        });
+    /* Fade label when mid-drag between cards */
+    const drift = Math.abs(carPosition - ci);
+    cardLabel.style.opacity = Math.max(0, 1 - drift * 2.8);
+}
 
-        card.addEventListener('mouseleave', () => {
-            card.classList.remove('hovered');
-            // restore resting rotation after class removed
-            card.style.transform = `rotate(${r}deg)`;
-        });
-    });
+function carSpring() {
+    if (carDragging) { carRAF = requestAnimationFrame(carSpring); return; }
 
-    // ═══ PACK / CUT LOGIC ═══
-    const packWrapper  = document.getElementById('pack-wrapper');
-    const packImg      = document.getElementById('pack-img');
-    const packShine    = document.getElementById('pack-shine');
-    const cutZone      = document.getElementById('cut-zone');
-    const cutGlow      = document.getElementById('cut-glow');
-    const cutBar       = document.getElementById('cut-progress-bar');
-    const landing      = document.getElementById('landing');
-    const tearTop      = document.getElementById('tear-top');
-    const tearBot      = document.getElementById('tear-bottom');
-    const goldenBurst  = document.getElementById('golden-burst');
-
-    let opened = false, isDragging = false, dragStartX = null, dragCurrentX = null;
-    const CUT_NEEDED = 0.7;
-
-    let shineTimer = null;
-    document.addEventListener('mousemove', (e) => {
-        if (opened) return;
-        const rect = packWrapper.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-        const dx = (e.clientX - cx) / (rect.width / 2), dy = (e.clientY - cy) / (rect.height / 2);
-        const cl = (v,a,b) => Math.min(Math.max(v,a),b);
-        if (!isDragging) packWrapper.style.transform = `rotateY(${cl(dx*20,-20,20)}deg) rotateX(${cl(-dy*20,-20,20)}deg)`;
-
-        const px = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
-        const py = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
-        packShine.classList.remove('idle');
-        packShine.style.background = `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.22) 0%, rgba(201,168,76,0.18) 20%, rgba(120,200,255,0.08) 40%, transparent 65%)`;
-
-        clearTimeout(shineTimer);
-        shineTimer = setTimeout(() => { packShine.classList.add('idle'); if (!isDragging) packWrapper.style.transform = ''; }, 1500);
-    });
-
-    document.addEventListener('mouseleave', () => { if (!opened) { packWrapper.style.transform = ''; packShine.classList.add('idle'); } });
-
-    function startCut(x) { if (opened) return; isDragging = true; dragStartX = x; dragCurrentX = x; cutGlow.style.display = 'block'; packShine.classList.remove('idle'); }
-
-    function moveCut(x) {
-        if (!isDragging || opened) return;
-        dragCurrentX = x;
-        const rect = packWrapper.getBoundingClientRect();
-        const progress = Math.min(Math.max((x - dragStartX) / rect.width, 0), 1);
-        cutGlow.style.setProperty('--gx', (x - rect.left - 20) + 'px');
-        cutBar.style.width = (progress * 100) + '%';
-        packWrapper.style.transform = `rotateZ(${(Math.random()-0.5)*1.5}deg) rotateY(${(progress-0.5)*10}deg)`;
-        if (progress >= CUT_NEEDED) completeCut();
+    const diff = carTarget - carPosition;
+    if (Math.abs(diff) < 0.00008 && Math.abs(carVelocity) < 0.00008) {
+        carPosition = carTarget;
+        carVelocity = 0;
+        updateCarousel();
+        return;
     }
 
-    function cancelCut() {
-        if (!isDragging) return;
-        isDragging = false; dragStartX = null; dragCurrentX = null;
-        cutBar.style.width = '0%'; cutGlow.style.display = 'none';
-        packWrapper.style.transform = ''; packShine.classList.add('idle');
-    }
+    carVelocity = carVelocity * 0.76 + diff * 0.13;
+    carPosition += carVelocity;
+    updateCarousel();
+    carRAF = requestAnimationFrame(carSpring);
+}
 
-    function completeCut() {
-        if (opened) return;
-        opened = true; isDragging = false; cutGlow.style.display = 'none'; cutBar.style.width = '100%';
-        const rect = packWrapper.getBoundingClientRect();
-        goldenBurst.style.top  = (rect.top + rect.height * 0.05) + 'px';
-        goldenBurst.style.left = (rect.left + rect.width / 2) + 'px';
-        goldenBurst.style.transform = 'translate(-50%, -50%)';
-        goldenBurst.classList.add('burst');
-        setTimeout(tearOpen, 120);
-    }
+/* Carousel drag */
+function onCarDragStart(x, y) {
+    carDragging  = true;
+    carDragX0    = x;
+    carDragY0    = y;
+    carDragPos0  = carPosition;
+    cancelAnimationFrame(carRAF);
+    carouselStage.classList.add('grabbing');
+}
 
-    cutZone.addEventListener('mousedown', (e) => { e.preventDefault(); startCut(e.clientX); });
-    document.addEventListener('mousemove', (e) => { if (isDragging) moveCut(e.clientX); });
-    document.addEventListener('mouseup', () => { if (isDragging) cancelCut(); });
-    cutZone.addEventListener('touchstart', (e) => { e.preventDefault(); startCut(e.touches[0].clientX); }, { passive: false });
-    document.addEventListener('touchmove', (e) => { if (isDragging) moveCut(e.touches[0].clientX); });
-    document.addEventListener('touchend', () => { if (isDragging) cancelCut(); });
+function onCarDragMove(x) {
+    if (!carDragging) return;
+    const dx     = x - carDragX0;
+    carPosition  = Math.max(0, Math.min(CARDS.length - 1, carDragPos0 - dx / DRAG_SCALE));
+    updateCarousel();
+}
 
-    function tearOpen() {
-        const src = packImg.src;
-        const rect = packWrapper.getBoundingClientRect();
-        const topH = rect.height * 0.05, botH = rect.height - topH;
+function onCarDragEnd(x, y, target) {
+    if (!carDragging) return;
+    carDragging = false;
+    carouselStage.classList.remove('grabbing');
 
-        tearTop.style.cssText = `position:fixed;pointer-events:none;z-index:50;overflow:hidden;width:${rect.width}px;height:${topH}px;left:${rect.left}px;top:${rect.top}px;border-radius:8px 8px 0 0;transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .3s ease .32s;`;
-        tearTop.innerHTML = `<img src="${src}" style="width:100%;height:${rect.height}px;object-fit:fill;border-radius:8px;">`;
-        tearBot.style.cssText = `position:fixed;pointer-events:none;z-index:50;overflow:hidden;width:${rect.width}px;height:${botH}px;left:${rect.left}px;top:${rect.top+topH}px;border-radius:0 0 8px 8px;transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .3s ease .32s;`;
-        tearBot.innerHTML = `<img src="${src}" style="width:100%;height:${rect.height}px;object-fit:fill;border-radius:8px;margin-top:-${topH}px;">`;
+    const dx = Math.abs(x - carDragX0);
+    const dy = Math.abs(y - carDragY0);
 
-        packImg.style.opacity = '0';
-        packShine.style.opacity = '0';
+    carTarget = Math.max(0, Math.min(CARDS.length - 1, Math.round(carPosition)));
 
-        // kill cut UI immediately
-        document.getElementById('cut-zone').style.display = 'none';
-        document.getElementById('cut-indicator').style.display = 'none';
-        document.getElementById('cut-progress-wrap').style.display = 'none';
-        cutGlow.style.display = 'none';
-
-        spawnGoldenParticles(rect.left + rect.width / 2, rect.top + topH);
-
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-            tearTop.style.transform = `translateY(-${topH + 120}px)`; tearTop.style.opacity = '0';
-            tearBot.style.transform = `translateY(${botH + 120}px)`;  tearBot.style.opacity = '0';
-        }));
-
-        setTimeout(() => {
-            document.getElementById('pack-scene').style.display = 'none';
-            tearTop.style.display = 'none';
-            tearBot.style.display = 'none';
-            goldenBurst.classList.remove('burst');
-
-            cards.forEach((card, i) => {
-                setTimeout(() => {
-                    const r = parseFloat(card.dataset.r) || 0;
-                    card.style.transform = `rotate(${r}deg)`;
-                    card.classList.add('landed');
-                }, i * 150);
-            });
-        }, 750);
-    }
-
-    function spawnGoldenParticles(x, y) {
-        const colors = ['#f0d080','#c9a84c','#fff8dc','#ffd700'];
-        for (let i = 0; i < 24; i++) {
-            const p = document.createElement('div'); p.className = 'particle';
-            const angle = (i/24)*Math.PI*2, dist = 60+Math.random()*160, size = 2+Math.random()*4, dur = 0.5+Math.random()*0.6;
-            p.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size*3}px;border-radius:2px;background:${colors[Math.floor(Math.random()*colors.length)]};--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;--dur:${dur}s;--rot:${Math.random()*360}deg;box-shadow:0 0 6px 2px rgba(255,220,60,0.7);`;
-            document.body.appendChild(p); setTimeout(() => p.remove(), dur*1000+150);
-        }
-        for (let i = 0; i < 8; i++) {
-            const p = document.createElement('div'); p.className = 'particle';
-            const angle = Math.random()*Math.PI*2, dist = 30+Math.random()*80, size = 8+Math.random()*16, dur = 0.4+Math.random()*0.4;
-            p.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle, rgba(255,240,100,0.9) 0%, rgba(201,168,76,0.4) 60%, transparent 100%);--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;--dur:${dur}s;box-shadow:0 0 12px 4px rgba(255,200,40,0.5);`;
-            document.body.appendChild(p); setTimeout(() => p.remove(), dur*1000+150);
+    /* Treat as click if barely moved */
+    if (dx < 8 && dy < 8) {
+        const cardEl = target?.closest?.('.c-card');
+        if (cardEl) {
+            const idx    = parseInt(cardEl.dataset.index);
+            const center = Math.round(carPosition);
+            if (idx === center) {
+                openOverlay(idx);
+                return;
+            }
+            carTarget = idx;
         }
     }
 
-    // ═══ OVERLAY ═══
-    const overlay         = document.getElementById('overlay');
-    const overlayBg       = document.getElementById('overlay-bg');
-    const overlayClose    = document.getElementById('overlay-close');
-    const overlayFrontImg = document.getElementById('overlay-front-img');
-    const overlayCardInner= document.getElementById('overlay-card-inner');
-    const overlayCardSide = document.getElementById('overlay-card-side');
-    const overlayCardShine= document.getElementById('overlay-card-shine');
-    const overlayCardName = document.getElementById('overlay-card-name');
-    const overlayCardType = document.getElementById('overlay-card-type');
-    const overlayCardLabel= document.getElementById('overlay-card-label');
-    const overlayInfoBody = document.getElementById('overlay-info-body');
-    const overlayTags     = document.getElementById('overlay-tags');
-    const flipHint        = document.getElementById('flip-hint');
+    carSpring();
+}
 
-    let cardFlipped = false;
+carouselStage.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    onCarDragStart(e.clientX, e.clientY);
+});
+document.addEventListener('mousemove', (e) => {
+    if (carDragging) onCarDragMove(e.clientX);
+});
+document.addEventListener('mouseup', (e) => {
+    if (carDragging) onCarDragEnd(e.clientX, e.clientY, e.target);
+});
 
-    function openOverlay(index) {
-        const data = CARD_DATA[index];
-        cardFlipped = false;
-        overlayCardInner.classList.remove('flipped');
-        overlayFrontImg.src = data.img;
-        overlayCardLabel.textContent = data.label;
-        overlayCardName.textContent  = data.name;
-        overlayCardType.textContent  = data.type;
-        flipHint.textContent = 'click to flip';
+carouselStage.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    onCarDragStart(t.clientX, t.clientY);
+}, { passive: true });
+document.addEventListener('touchmove', (e) => {
+    if (carDragging) onCarDragMove(e.touches[0].clientX);
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+    if (!carDragging) return;
+    const t = e.changedTouches[0];
+    onCarDragEnd(t.clientX, t.clientY, document.elementFromPoint(t.clientX, t.clientY));
+});
 
-        overlayInfoBody.innerHTML = data.sections.map((s, i) => `
-            ${i > 0 ? '<div class="info-divider"></div>' : ''}
-            <div>
-                <div class="info-section-label">${s.heading}</div>
-                ${s.quote
-                    ? `<p class="info-why">${s.text}</p>`
-                    : `<p class="info-section-text">${s.text}</p>`
-                }
-            </div>
-        `).join('');
+/* ─────────────────────────────────────────────
+   OVERLAY
+───────────────────────────────────────────── */
+const overlay        = document.getElementById('overlay');
+const overlayBackdrop= document.getElementById('overlay-backdrop');
+const overlayCName   = document.getElementById('overlay-card-name');
+const overlayTLine   = document.getElementById('overlay-type-line');
+const overlayS1      = document.getElementById('overlay-section1');
+const overlayS2      = document.getElementById('overlay-section2');
+const overlayFrontImg= document.getElementById('overlay-front-img');
+const overlayCardInn = document.getElementById('overlay-card-inner');
+const overlayCardSide= document.getElementById('overlay-card-side');
+const overlayShine   = document.getElementById('overlay-card-shine');
+const flipHint       = document.getElementById('overlay-flip-hint');
 
-        overlayTags.innerHTML = data.tags.map(t => `<span class="overlay-tag">${t}</span>`).join('');
-        overlay.classList.add('active');
-    }
+let isFlipped = false;
 
-    function closeOverlay() {
-        overlay.classList.remove('active');
-        cardFlipped = false;
-        overlayCardInner.classList.remove('flipped');
-    }
+function openOverlay(idx) {
+    const d = CARDS[idx];
+    isFlipped = false;
+    overlayCardInn.classList.remove('flipped');
+    overlayCardInn.style.transform  = '';
+    overlayCardInn.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
+    overlayFrontImg.src     = d.img;
+    overlayCName.textContent= d.name;
+    overlayTLine.textContent= d.typeLine;
+    overlayS1.textContent   = d.about;
+    overlayS2.textContent   = d.why;
+    flipHint.textContent    = 'click to flip';
+    overlay.classList.add('active');
+    overlay.style.display   = 'flex';
+}
 
-    cards.forEach((card) => {
-        card.addEventListener('click', () => {
-            if (!card.classList.contains('landed')) return;
-            openOverlay(parseInt(card.dataset.index));
-        });
-    });
+function closeOverlay() {
+    overlay.classList.remove('active');
+    overlay.style.display   = 'none';
+    isFlipped               = false;
+    overlayCardInn.classList.remove('flipped');
+    overlayCardInn.style.transform  = '';
+    overlayShine.style.background   = '';
+}
 
-    overlayBg.addEventListener('click', closeOverlay);
-    overlayClose.addEventListener('click', closeOverlay);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOverlay(); });
+/* Backdrop click */
+overlayBackdrop.addEventListener('click', closeOverlay);
 
-    overlayCardSide.addEventListener('click', () => {
-        cardFlipped = !cardFlipped;
-        overlayCardInner.classList.toggle('flipped', cardFlipped);
-        flipHint.textContent = cardFlipped ? 'click to flip back' : 'click to flip';
-    });
+/* Escape */
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOverlay(); });
 
-    overlayCardSide.addEventListener('mousemove', (e) => {
-        const rect = overlayCardSide.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-        const dx = (e.clientX - cx) / (rect.width / 2), dy = (e.clientY - cy) / (rect.height / 2);
-        const cl = (v,a,b) => Math.min(Math.max(v,a),b);
-        overlayCardInner.style.transform = cardFlipped
-            ? `rotateY(${180 + cl(dx*12,-12,12)}deg) rotateX(${cl(-dy*12,-12,12)}deg)`
-            : `rotateY(${cl(dx*12,-12,12)}deg) rotateX(${cl(-dy*12,-12,12)}deg)`;
-        overlayCardInner.style.transition = 'transform 0.08s ease-out';
+/* Card flip */
+overlayCardSide.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isFlipped = !isFlipped;
+    overlayCardInn.classList.toggle('flipped', isFlipped);
+    overlayCardInn.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
+    overlayCardInn.style.transform  = isFlipped ? 'rotateY(180deg)' : '';
+    flipHint.textContent = isFlipped ? 'click to flip back' : 'click to flip';
+});
 
-        const px = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
-        const py = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
-        overlayCardShine.style.background = `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.2) 0%, rgba(201,168,76,0.15) 25%, rgba(120,200,255,0.07) 50%, transparent 70%)`;
-    });
+/* Parallax tilt + foil shimmer */
+overlayCardSide.addEventListener('mousemove', (e) => {
+    const rect = overlayCardSide.getBoundingClientRect();
+    const dx   = (e.clientX - rect.left - rect.width  / 2) / (rect.width  / 2);
+    const dy   = (e.clientY - rect.top  - rect.height / 2) / (rect.height / 2);
+    const clamp= (v,a,b) => Math.min(Math.max(v,a),b);
+    const rx   = clamp(-dy * 12, -12, 12);
+    const ry   = clamp( dx * 12, -12, 12);
 
-    overlayCardSide.addEventListener('mouseleave', () => {
-        overlayCardInner.style.transition = 'transform 0.5s ease';
-        overlayCardInner.style.transform  = cardFlipped ? 'rotateY(180deg)' : '';
-        overlayCardShine.style.background = 'none';
-    });
-    </script>
+    overlayCardInn.style.transition = 'transform 0.08s ease-out';
+    overlayCardInn.style.transform  = isFlipped
+        ? `rotateY(${180 + ry}deg) rotateX(${rx}deg)`
+        : `rotateY(${ry}deg) rotateX(${rx}deg)`;
+
+    const mx   = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
+    const my   = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
+    const hue  = (parseFloat(mx) / 100 * 300 + parseFloat(my) / 100 * 150) % 360;
+    overlayShine.style.background =
+        `radial-gradient(circle at ${mx}% ${my}%,` +
+        `rgba(255,255,255,0.24) 0%,` +
+        `hsla(${hue},100%,72%,0.14) 22%,` +
+        `hsla(${(hue+70)%360},100%,68%,0.08) 44%,` +
+        `transparent 66%)`;
+});
+
+overlayCardSide.addEventListener('mouseleave', () => {
+    overlayCardInn.style.transition = 'transform 0.5s ease';
+    overlayCardInn.style.transform  = isFlipped ? 'rotateY(180deg)' : '';
+    overlayShine.style.background   = '';
+});
+
+/* Stop info-side clicks from closing */
+document.getElementById('overlay-info-side').addEventListener('click', (e) => e.stopPropagation());
+</script>
 </body>
 </html>
