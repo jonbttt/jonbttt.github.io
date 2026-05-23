@@ -46,26 +46,26 @@ html, body {
 #pack-container {
     position: relative;
     width: clamp(150px, 16vw, 220px);
-    aspect-ratio: 3 / 4.2;
+    /* No aspect-ratio — height is driven by the image so container = image exactly */
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 #pack-img {
-    position: absolute;
-    inset: 0;
-    width: 100%; height: 100%;
-    object-fit: contain;
+    /* position: relative so it drives the container's height */
+    position: relative;
     display: block;
+    width: 100%;
+    height: auto;   /* natural aspect ratio — no letterboxing */
     border-radius: 8px;
     pointer-events: none;
     -webkit-user-drag: none;
     z-index: 1;
 }
 
-/* Foil layers */
 #pack-foil-rainbow {
     position: absolute;
     inset: 0;
-    border-radius: 8px;
     z-index: 2;
     pointer-events: none;
     mix-blend-mode: screen;
@@ -82,38 +82,113 @@ html, body {
         hsla(360,100%,70%,1) 100%
     );
     transition: transform 0.15s ease;
+    /* Clip foil to the exact alpha shape of the pack PNG */
+    -webkit-mask-image: url('img/pack.png');
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-image: url('img/pack.png');
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
 }
 
 #pack-foil-highlight {
     position: absolute;
     inset: 0;
-    border-radius: 8px;
     z-index: 3;
     pointer-events: none;
     mix-blend-mode: screen;
     background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 35%, transparent 65%);
+    -webkit-mask-image: url('img/pack.png');
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-image: url('img/pack.png');
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
 }
 
-/* Drag zone — top 20% */
+/* ── Top flap that bends/peels during the cut drag ─────────────────────── */
+/* Wrapper owns the perspective frustum; inner owns the rotateX hinge.
+   Perspective on a PARENT gives a proper 3D vanishing point — perspective()
+   inline in a transform list doesn't produce the same result. */
+#pack-flap-wrap {
+    display: none;
+    position: fixed;
+    pointer-events: none;
+    z-index: 8;
+    overflow: visible;
+    /* perspective + perspective-origin set via JS so they match the flap size */
+}
+#pack-flap {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    transform-origin: 50% 100%;   /* hinge at the cut line (bottom of flap) */
+}
+#pack-flap img {
+    display: block;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
 #pack-drag-zone {
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 20%;
     z-index: 10;
-    cursor: crosshair;
+    cursor: col-resize;
     border-radius: 8px 8px 0 0;
 }
 
+/* guide line — always visible when zone active, static dashed tear guide */
+#pack-drag-zone::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: repeating-linear-gradient(90deg,
+        rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 4px,
+        transparent 4px, transparent 8px);
+    pointer-events: none;
+}
+
+/* left notch / perforation mark */
+#pack-drag-zone::before {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 6px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.30);
+    pointer-events: none;
+}
+
+/* Pokémon TCG Pocket-style fill bar: grows left→right from pack edge */
 #pack-drag-glow {
     position: absolute;
-    top: 0;
-    width: 52px; height: 100%;
-    transform: translateX(-50%);
-    background: radial-gradient(ellipse at center, rgba(115,31,161,0.95) 0%, rgba(115,31,161,0.4) 45%, transparent 75%);
-    filter: blur(5px);
+    bottom: 0; left: 0;
+    width: 0; height: 2px;
     pointer-events: none;
     display: none;
     z-index: 11;
+    background: linear-gradient(90deg, rgba(115,31,161,0.5) 0%, #9b4fd6 70%, #c090f0 100%);
+    box-shadow: 0 0 8px 2px rgba(115,31,161,0.85), 0 0 2px 1px #c090f0;
+    border-radius: 1px;
+    transition: none;
+}
+
+/* glowing tip at the right edge of the fill bar */
+#pack-drag-glow::after {
+    content: '';
+    position: absolute;
+    right: -6px; top: 50%;
+    transform: translateY(-50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, #c090f0 35%, rgba(115,31,161,0.5) 65%, transparent 100%);
+    filter: blur(1.5px);
 }
 
 #pack-progress {
@@ -138,15 +213,15 @@ html, body {
 
 #pack-hint {
     font-family: var(--font);
-    font-size: 0.68rem;
+    font-size: 0.58rem;
     letter-spacing: 0.22em;
     color: var(--white);
     opacity: 0.28;
     pointer-events: none;
     margin-top: 0.2rem;
+    font-variant: small-caps;
 }
 
-/* Tear portal */
 #tear-top, #tear-bottom {
     position: fixed;
     pointer-events: none;
@@ -154,20 +229,7 @@ html, body {
     overflow: hidden;
 }
 
-/* Particle */
-.particle {
-    position: fixed;
-    pointer-events: none;
-    z-index: 90;
-    animation: particleFly var(--dur, 0.7s) ease-out forwards;
-}
 
-@keyframes particleFly {
-    0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--rot,200deg)); opacity: 0; }
-}
-
-/* Scene flash */
 #scene-flash {
     position: fixed;
     inset: 0;
@@ -179,7 +241,7 @@ html, body {
 }
 
 /* ═══════════════════════════════
-   SCREEN 2 — CAROUSEL
+   SCREEN 2 — CYLINDER CAROUSEL
 ═══════════════════════════════ */
 #screen-carousel {
     position: fixed;
@@ -189,40 +251,52 @@ html, body {
     overflow: hidden;
 }
 
+/* The perspective container — fills screen minus label zone */
 #carousel-stage {
     position: absolute;
-    inset: 0;
-    bottom: 150px;
+    top: 0; left: 0; right: 0;
+    bottom: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
-    perspective: 1000px;
+    perspective: 900px;
     perspective-origin: 50% 50%;
     cursor: grab;
 }
 
 #carousel-stage.grabbing { cursor: grabbing; }
 
-#carousel-inner {
+/* The rotating cylinder — its rotateY is driven by JS */
+#carousel-track {
     position: relative;
     width: 0; height: 0;
     transform-style: preserve-3d;
+    /* rotateX tilt + rotateY spin set by JS */
+    will-change: transform;
 }
 
+/* Each card slot: positioned around the cylinder */
 .c-card {
     position: absolute;
-    width: clamp(155px, 17vw, 230px);
+    width: clamp(120px, 13.5vw, 180px);
     aspect-ratio: 5 / 7;
-    border-radius: 4.5%;
-    overflow: hidden;
+    /* translateZ(RADIUS) applied by JS */
+    transform-style: preserve-3d;
     cursor: pointer;
-    will-change: transform, opacity;
-    -webkit-user-drag: none;
-    backface-visibility: hidden;
-    box-shadow: 0 20px 70px rgba(0,0,0,0.65);
 }
 
-.c-card img {
+/* Front and back faces — both hidden when facing away */
+.c-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 4.5%;
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+}
+
+.c-face img {
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
@@ -230,7 +304,12 @@ html, body {
     -webkit-user-drag: none;
 }
 
-/* Label area */
+/* Back face is pre-rotated 180° so it appears when the slot faces away */
+.c-face-back {
+    transform: rotateY(180deg);
+}
+
+/* Label strip — bottom center */
 #card-label {
     position: absolute;
     bottom: 44px;
@@ -239,7 +318,7 @@ html, body {
     text-align: center;
     pointer-events: none;
     white-space: nowrap;
-    transition: opacity 0.2s;
+    transition: opacity 0.15s;
 }
 
 #card-label-typeline {
@@ -247,10 +326,10 @@ html, body {
     font-size: 0.58rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
+    font-variant: small-caps;
     color: var(--white);
     opacity: 0.4;
     margin-bottom: 0.35rem;
-    font-variant: small-caps;
 }
 
 #card-label-name {
@@ -262,7 +341,7 @@ html, body {
     line-height: 1.1;
 }
 
-/* Contact links */
+/* Contact links — bottom right */
 #contact-links {
     position: absolute;
     bottom: 26px;
@@ -319,7 +398,6 @@ html, body {
     to   { opacity: 1; }
 }
 
-/* Left — card */
 #overlay-card-side {
     width: 45%;
     flex-shrink: 0;
@@ -396,7 +474,6 @@ html, body {
 
 @keyframes pulse { 0%,100%{opacity:0.2} 50%{opacity:0.65} }
 
-/* Right — info */
 #overlay-info-side {
     flex: 1;
     background: var(--white);
@@ -457,7 +534,6 @@ html, body {
     margin: 0;
 }
 
-/* Scrollbar for body */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: rgba(115,31,161,0.3); border-radius: 2px; }
@@ -478,13 +554,17 @@ html, body {
             </div>
         </div>
     </div>
-    <p id="pack-hint">slide to open</p>
+    <!-- flap lives outside pack-container so CSS overflow:hidden doesn't clip the 3D bend -->
+    <div id="pack-flap-wrap">
+        <div id="pack-flap"><img src="img/pack.png" draggable="false" /></div>
+    </div>
+    <p id="pack-hint">SLIDE TO OPEN</p>
 </div>
 
 <!-- ═══ SCREEN 2: CAROUSEL ═══ -->
 <div id="screen-carousel">
     <div id="carousel-stage">
-        <div id="carousel-inner"></div>
+        <div id="carousel-track"></div>
     </div>
     <div id="card-label">
         <div id="card-label-typeline"></div>
@@ -525,7 +605,6 @@ html, body {
     </div>
 </div>
 
-<!-- Tear portal + flash -->
 <div id="tear-top"></div>
 <div id="tear-bottom"></div>
 <div id="scene-flash"></div>
@@ -539,84 +618,265 @@ html, body {
 const CARDS = [
     {
         img: 'img/card-1.png',
-        name: 'Arcum Dagsson',
-        typeLine: 'Legendary Creature — About me',
-        about: 'Final-year CS student at UNSW specialising in Security Engineering, graduating December 2026. Software Engineer at The Golfer Network. Previously AI Engineer at PT Wide Technologies in Indonesia. Targeting grad roles in cybersecurity and tech risk advisory.',
-        why: 'Arcum Dagsson dismantles existing artifacts to tutor out more powerful ones from his library. That is exactly what security engineering is — you take apart systems to understand them, then build something more dangerous. The blue mana cost, the artificer identity, the methodical destruction-as-construction. It fit immediately.'
+        name: 'About Me',
+        typeLine: 'Arcum Dagsson',
+        about: 'Final-year CS student at UNSW specialising in Security Engineering, graduating December 2026. Software Engineer at The Golfer Network. Previously AI Engineer at PT Wide Technologies in Indonesia. Targeting grad roles in cybersecurity and SWE.',
+        why: 'Text'
     },
     {
         img: 'img/card-2.png',
-        name: 'Snapcaster Mage',
-        typeLine: 'Instant — Field Experience',
-        about: 'Software Engineer at The Golfer Network building full-stack products. Previously AI Engineer at PT Wide Technologies. Projects include a Meta Quest 3 mixed reality app in Unity, a home lab SIEM with ELK Stack and OTX AlienVault, and a Linux kernel rootkit.',
-        why: 'Snapcaster Mage gives flashback to instants and sorceries — he makes past experience immediately useful again. Every role I have taken has fed directly into the next one. The ability to reach back into what you have already done and cast it again at the right moment is what good engineering experience actually looks like.'
+        name: 'Projects',
+        typeLine: 'Goblin Engineer',
+        about: 'List of projects here',
+        why: 'Text'
     },
     {
         img: 'img/card-3.png',
-        name: 'Goblin Engineer',
-        typeLine: 'Creature — Side Projects',
-        about: 'rk-veil — Linux kernel module rootkit, syscall hooking and process hiding on kernel v6. Home Lab SIEM — ELK Stack with OTX AlienVault threat intelligence and Jira integration. MR Sandbox — Meta Quest 3 mixed reality chemistry education app in Unity.',
-        why: 'Goblin Engineer puts an artifact into the graveyard and recurs a different one from it. Build something, break it, pull out something more dangerous. That loop of building, breaking, and rebuilding is exactly how side projects work — especially in security. The workshop chaos of the art is accurate.'
+        name: 'Experience',
+        typeLine: 'Snapcaster Mage',
+        about: 'Text',
+        why: 'Text'
     },
     {
         img: 'img/card-4.png',
-        name: 'Zilortha, Strength Incarnate',
-        typeLine: 'Legendary Creature — Lifting',
-        about: 'Competitive powerlifter, 72kg weight class, about 2.5 years of serious training. Currently cutting. Tracking macros, optimising sleep, dialling in nutrition around training. Main lifts squat, bench, deadlift.',
-        why: 'Zilortha makes your creatures assign combat damage using power rather than toughness. It does not matter how much you can absorb — what matters is how hard you hit. That is the mindset of powerlifting. The card is a 10/10. The art is an unstoppable dinosaur. There is no subtext.'
+        name: 'Lifting',
+        typeLine: 'Zilortha, Strength Incarnate',
+        about: '',
+        why: ''
     },
     {
         img: 'img/card-5.png',
-        name: 'Mox Amber',
-        typeLine: 'Artifact — MTG',
-        about: 'Avid MTG player, mainly Commander with friends and Arena on downtime. Currently running 5 decks. Moxfield: moxfield.com/users/jonbttt',
-        why: 'A Mox costs nothing and generates value immediately. Mox Amber specifically taps for mana if you control a legendary creature or planeswalker — it only works when something meaningful is already in play. MTG is the zero-cost thing I show up for that only works because everything else is already there.'
+        name: 'MTG',
+        typeLine: 'Mox Amber',
+        about: 'I\'m an Avid MTG player, mainly Commander with friends and Arena on downtime. I currently have 5 decks which you can view on my Moxfield: moxfield.com/users/jonbttt',
+        why: ''
     },
     {
         img: 'img/card-6.png',
-        name: 'Explore',
-        typeLine: 'Sorcery — Travel',
-        about: 'Travelled across Southeast Asia, East Asia, and beyond. Originally from Indonesia, based in Sydney. Always looking for the next stamp.',
-        why: 'Explore lets you play an extra land and draws a card if you cannot — it makes the unknown productive. Every place changes how you see the next one. The mechanic of moving further and gaining something regardless of what you find is exactly how travel works.'
+        name: 'Travelling',
+        typeLine: 'Explore',
+        about: '',
+        why: ''
     }
 ];
+
+const N          = CARDS.length;       // 6
+const CARD_ANGLE = 360 / N;            // 60° per card
+const TILT_X     = -5;                   // degrees — slight downward tilt for depth
+const RADIUS     = 380;                // cylinder radius in px
+const DRAG_DEG   = 0.36;              // degrees of rotation per pixel dragged
 
 /* ─────────────────────────────────────────────
    SCREEN 1 — PACK OPENING
 ───────────────────────────────────────────── */
-const packContainer  = document.getElementById('pack-container');
-const packImg        = document.getElementById('pack-img');
-const packFoilR      = document.getElementById('pack-foil-rainbow');
-const packFoilH      = document.getElementById('pack-foil-highlight');
-const packDragZone   = document.getElementById('pack-drag-zone');
-const packDragGlow   = document.getElementById('pack-drag-glow');
-const packProgress   = document.getElementById('pack-progress');
-const packProgressBar= document.getElementById('pack-progress-bar');
-const tearTop        = document.getElementById('tear-top');
-const tearBot        = document.getElementById('tear-bottom');
-const sceneFlash     = document.getElementById('scene-flash');
+const packContainer   = document.getElementById('pack-container');
+const packImg         = document.getElementById('pack-img');
+const packFoilR       = document.getElementById('pack-foil-rainbow');
+const packFoilH       = document.getElementById('pack-foil-highlight');
+const packDragZone    = document.getElementById('pack-drag-zone');
+const packDragGlow    = document.getElementById('pack-drag-glow');
+const packProgress    = document.getElementById('pack-progress');
+const packProgressBar = document.getElementById('pack-progress-bar');
+const packFlapWrap    = document.getElementById('pack-flap-wrap');
+const packFlap        = document.getElementById('pack-flap');
+const tearTop         = document.getElementById('tear-top');
+const tearBot         = document.getElementById('tear-bottom');
+const sceneFlash      = document.getElementById('scene-flash');
 
-let packOpened  = false;
-let packDragging= false;
-let packDragX0  = 0;
-let packDragCur = 0;
+let packOpened   = false;
+let packDragging = false;
+let packDragX0   = 0;
 const PACK_THRESHOLD = 0.70;
 
-/* Foil idle animation */
-let idleT    = 0;
-let idleRAF  = null;
-let isIdle   = true;
-let idleTimer= null;
+/* ── Flap bend ────────────────────────────────────────────────────────── */
+function showPackFlap() {
+    const rect  = packContainer.getBoundingClientRect();
+    const flapH = rect.height * 0.18;
+    packFlapWrap.style.cssText =
+        `display:block;position:fixed;overflow:visible;pointer-events:none;z-index:8;` +
+        `left:${rect.left}px;top:${rect.top}px;` +
+        `width:${rect.width}px;height:${flapH}px;` +
+        `perspective:500px;perspective-origin:50% 100%;`;
+    packFlap.style.display = 'block';
+    const img = packFlap.querySelector('img');
+    img.style.cssText =
+        `width:${rect.width}px;height:${rect.height}px;display:block;-webkit-user-drag:none;`;
+    packFlap.style.filter = 'drop-shadow(0 6px 18px rgba(0,0,0,0.85))';
+}
+
+function updatePackBend(progress) {
+    const angle  = progress * 60;
+    const bright = 1 + progress * 0.18;
+    packFlap.style.transform = `rotateX(${angle}deg)`;
+    packFlap.style.filter    =
+        `drop-shadow(0 ${3 + progress * 14}px ${8 + progress * 22}px rgba(0,0,0,0.92))` +
+        ` brightness(${bright})`;
+}
+
+function hidePackFlap() {
+    packFlapWrap.style.display = 'none';
+    packFlap.style.transform   = '';
+    packFlap.style.filter      = '';
+}
+
+/* ── Cut-spark canvas ──────────────────────────────────────────────────────
+   Sparks scatter from random points along the already-opened segment of the
+   cut line [cutLineLeft → cutCursorX].  They only appear when the user is
+   actively dragging (moving), not on hold-in-place.
+   A thin glowing line is also drawn over the opened segment each frame.
+──────────────────────────────────────────────────────────────────────────── */
+let cutCanvas  = null, cutCtx = null;
+let cutParts   = [];
+let cutRAF     = null;
+let cutCursorX = 0, cutCursorY = 0;   /* right edge of the opened cut */
+let cutLineLeft = 0;                   /* left edge (pack's left side) */
+let cutMoved   = false;                /* true only when cursor actually moved */
+
+function startCutCanvas() {
+    cutCanvas = document.createElement('canvas');
+    cutCanvas.style.cssText =
+        'position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;';
+    cutCanvas.width  = window.innerWidth;
+    cutCanvas.height = window.innerHeight;
+    document.body.appendChild(cutCanvas);
+    cutCtx   = cutCanvas.getContext('2d');
+    cutParts = [];
+    cutMoved = false;
+    tickCutCanvas();
+}
+
+function stopCutCanvas() {
+    cancelAnimationFrame(cutRAF);
+    if (cutCanvas) { cutCanvas.remove(); cutCanvas = null; cutCtx = null; }
+    cutParts  = [];
+    cutMoved  = false;
+}
+
+function spawnCutSparks() {
+    /* Only spawn along the segment that has actually been cut */
+    const openedW = cutCursorX - cutLineLeft;
+    if (openedW < 2) return;
+
+    /* 1 spark per call — random point along the opened segment */
+    const sx    = cutLineLeft + Math.random() * openedW;
+    const sy    = cutCursorY;
+    const up    = Math.random() > 0.5;
+    const vx    = (Math.random() - 0.5) * 0.5;
+    const vy    = (up ? -1 : 1) * (0.25 + Math.random() * 0.9);
+    const white = Math.random() > 0.45;
+    cutParts.push({
+        x: sx, y: sy,
+        vx, vy,
+        life  : 1,
+        decay : 0.016 + Math.random() * 0.014,
+        len   : 5 + Math.random() * 12,
+        col   : white ? [255,255,255] : (Math.random() > 0.5 ? [192,144,240] : [220,160,255]),
+    });
+}
+
+function tickCutCanvas() {
+    cutRAF = requestAnimationFrame(tickCutCanvas);
+    if (!cutCtx) return;
+
+    /* Only spawn particles if the user is dragging AND has moved the cursor */
+    if (packDragging && cutMoved) {
+        spawnCutSparks();
+        cutMoved = false;   /* reset — wait for next genuine move */
+    }
+
+    cutCtx.clearRect(0, 0, cutCanvas.width, cutCanvas.height);
+    cutCtx.globalCompositeOperation = 'lighter';
+
+    /* Glowing cut-line drawn over the whole opened segment */
+    const openedW = cutCursorX - cutLineLeft;
+    if (packDragging && openedW > 1) {
+        /* Outer glow */
+        const lineGrd = cutCtx.createLinearGradient(cutLineLeft, 0, cutCursorX, 0);
+        lineGrd.addColorStop(0,   'rgba(115,31,161,0)');
+        lineGrd.addColorStop(0.3, 'rgba(155,79,214,0.35)');
+        lineGrd.addColorStop(1,   'rgba(220,160,255,0.7)');
+        cutCtx.beginPath();
+        cutCtx.moveTo(cutLineLeft, cutCursorY);
+        cutCtx.lineTo(cutCursorX,  cutCursorY);
+        cutCtx.strokeStyle = lineGrd;
+        cutCtx.lineWidth   = 4;
+        cutCtx.stroke();
+        /* Sharp bright core */
+        cutCtx.beginPath();
+        cutCtx.moveTo(cutLineLeft, cutCursorY);
+        cutCtx.lineTo(cutCursorX,  cutCursorY);
+        cutCtx.strokeStyle = `rgba(255,255,255,0.55)`;
+        cutCtx.lineWidth   = 1;
+        cutCtx.stroke();
+    }
+
+    /* Spark particles */
+    const alive = [];
+    for (const p of cutParts) {
+        p.vx *= 0.93;
+        p.vy *= 0.93;
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.life -= p.decay;
+        if (p.life <= 0) continue;
+        alive.push(p);
+
+        const a  = p.life;
+        const sp = Math.hypot(p.vx, p.vy) || 0.001;
+        const nx = p.vx / sp, ny = p.vy / sp;
+
+        const grd = cutCtx.createLinearGradient(
+            p.x - nx * p.len, p.y - ny * p.len, p.x, p.y
+        );
+        const [r, g, b] = p.col;
+        grd.addColorStop(0, `rgba(${r},${g},${b},0)`);
+        grd.addColorStop(1, `rgba(${r},${g},${b},${a * 0.85})`);
+        cutCtx.beginPath();
+        cutCtx.moveTo(p.x - nx * p.len, p.y - ny * p.len);
+        cutCtx.lineTo(p.x, p.y);
+        cutCtx.strokeStyle = grd;
+        cutCtx.lineWidth   = 1.1;
+        cutCtx.stroke();
+
+        cutCtx.beginPath();
+        cutCtx.arc(p.x, p.y, 1.0, 0, Math.PI * 2);
+        cutCtx.fillStyle = `rgba(255,255,255,${a * 0.8})`;
+        cutCtx.fill();
+    }
+    cutCtx.globalCompositeOperation = 'source-over';
+    cutParts = alive;
+}
+
+/* Foil shimmer */
+let idleT     = 0;
+let idleRAF   = null;
+let isIdle    = true;
+let idleTimer = null;
 
 function updatePackFoil(mx, my) {
-    const hue = (mx / 100 * 280 + my / 100 * 120) % 360;
+    /* Gradient angle shifts subtly with mouse X (±11°), not a full rotation */
+    const angle = 130 + (mx - 50) * 0.22;
+    /* Hue offset cycles gently across the spectrum as mouse moves */
+    const hue   = (mx / 100 * 160 + my / 100 * 80) % 360;
+
+    packFoilR.style.background =
+        `linear-gradient(${angle}deg,` +
+        `hsla(${hue},100%,68%,1) 0%,` +
+        `hsla(${(hue + 52) % 360},100%,70%,1) 14%,` +
+        `hsla(${(hue + 120) % 360},100%,70%,1) 28%,` +
+        `hsla(${(hue + 180) % 360},100%,70%,1) 43%,` +
+        `hsla(${(hue + 240) % 360},100%,70%,1) 57%,` +
+        `hsla(${(hue + 295) % 360},100%,70%,1) 71%,` +
+        `hsla(${(hue + 330) % 360},100%,70%,1) 85%,` +
+        `hsla(${hue},100%,68%,1) 100%)`;
+    packFoilR.style.transform = ''; /* no rotation — was causing overflow bleed */
+
     packFoilH.style.background =
         `radial-gradient(circle at ${mx}% ${my}%,` +
-        `rgba(255,255,255,0.26) 0%,` +
-        `hsla(${hue},100%,75%,0.13) 22%,` +
-        `hsla(${(hue+80)%360},100%,70%,0.08) 42%,` +
-        `transparent 64%)`;
-    packFoilR.style.transform = `rotate(${mx * 1.4}deg)`;
+        `rgba(255,255,255,0.22) 0%,` +
+        `hsla(${hue},100%,75%,0.10) 20%,` +
+        `hsla(${(hue + 80) % 360},100%,70%,0.05) 40%,` +
+        `transparent 60%)`;
 }
 
 function idleTick() {
@@ -627,53 +887,77 @@ function idleTick() {
     updatePackFoil(mx, my);
     idleRAF = requestAnimationFrame(idleTick);
 }
-
-function goIdle() {
-    isIdle = true;
-    cancelAnimationFrame(idleRAF);
-    idleRAF = requestAnimationFrame(idleTick);
-}
-
-function stopIdle() {
-    isIdle = false;
-    cancelAnimationFrame(idleRAF);
-}
+function goIdle()   { isIdle = true;  cancelAnimationFrame(idleRAF); idleRAF = requestAnimationFrame(idleTick); }
+function stopIdle() { isIdle = false; cancelAnimationFrame(idleRAF); }
 
 goIdle();
 
+function resetPackTilt() {
+    packContainer.style.transition = 'transform 0.5s ease';
+    packContainer.style.transform  = '';
+}
+
 document.addEventListener('mousemove', (e) => {
     if (packOpened) return;
-    const rect = packContainer.getBoundingClientRect();
-    const mx = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
-    const my = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
+    const rect  = packContainer.getBoundingClientRect();
+    const cx    = rect.left + rect.width  / 2;
+    const cy    = rect.top  + rect.height / 2;
+    const dx    = (e.clientX - cx) / (rect.width  / 2);
+    const dy    = (e.clientY - cy) / (rect.height / 2);
+    const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 
+    /* Parallax tilt — identical behaviour to the overlay card */
+    if (!packDragging) {
+        packContainer.style.transition = 'transform 0.08s ease-out';
+        packContainer.style.transform  =
+            `perspective(1200px) rotateY(${clamp(dx * 8, -8, 8)}deg)` +
+            ` rotateX(${clamp(-dy * 8, -8, 8)}deg)`;
+    }
+
+    /* Foil shimmer — position in % relative to pack */
+    const mx = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
+    const my = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
     stopIdle();
     updatePackFoil(mx, my);
-
     clearTimeout(idleTimer);
     idleTimer = setTimeout(goIdle, 1600);
 });
 
-/* Drag mechanic */
+document.addEventListener('mouseleave', () => {
+    if (!packOpened) { resetPackTilt(); goIdle(); }
+});
+
+/* Drag logic */
 function packDragStart(x) {
     if (packOpened) return;
+    const rect   = packContainer.getBoundingClientRect();
+    cutLineLeft  = rect.left;                        /* left edge of cut segment */
+    cutCursorX   = rect.left;                        /* nothing opened yet */
+    cutCursorY   = rect.top + rect.height * 0.18;
     packDragging = true;
     packDragX0   = x;
-    packDragCur  = x;
     packDragGlow.style.display = 'block';
-    packProgress.style.display = 'block';
+    packDragGlow.style.width   = '0px';
+    startCutCanvas();
     stopIdle();
 }
 
 function packDragMove(x) {
     if (!packDragging || packOpened) return;
-    packDragCur = x;
-    const rect  = packContainer.getBoundingClientRect();
-    const relX  = x - rect.left;
-    const prog  = Math.max(0, Math.min(1, (x - packDragX0) / rect.width));
+    const rect = packContainer.getBoundingClientRect();
+    const relX = x - rect.left;
+    const prog = Math.max(0, Math.min(1, relX / rect.width));
 
-    packDragGlow.style.left = relX + 'px';
-    packProgressBar.style.width = (prog * 100) + '%';
+    /* Fill bar */
+    packDragGlow.style.width = Math.max(0, relX) + 'px';
+
+    /* Advance the right edge of the opened segment to the cursor */
+    const newX = Math.max(cutLineLeft, Math.min(x, rect.right));
+    if (newX !== cutCursorX) {
+        cutCursorX = newX;
+        cutCursorY = rect.top + rect.height * 0.18;
+        cutMoved   = true;   /* tells tickCutCanvas to emit a spark this frame */
+    }
 
     if (prog >= PACK_THRESHOLD) completePack();
 }
@@ -682,132 +966,62 @@ function packDragCancel() {
     if (!packDragging) return;
     packDragging = false;
     packDragGlow.style.display = 'none';
-    packProgress.style.display = 'none';
-    packProgressBar.style.width = '0%';
+    packDragGlow.style.width   = '0px';
+    stopCutCanvas();
+    resetPackTilt();
     goIdle();
 }
 
 function completePack() {
     if (packOpened) return;
-    packOpened  = true;
-    packDragging= false;
+    packOpened   = true;
+    packDragging = false;
     packDragGlow.style.display = 'none';
-
-    const rect = packContainer.getBoundingClientRect();
-    const tearY = rect.top + rect.height * 0.05;
-    const tearX = rect.left + rect.width / 2;
-
-    spawnParticles(tearX, tearY);
-    setTimeout(() => tearOpen(rect), 80);
+    stopCutCanvas();
+    resetPackTilt();
+    tearOpen();
 }
 
-/* Tear animation */
-function tearOpen(rect) {
-    const src  = packImg.src;
-    const topH = rect.height * 0.05;
-    const botH = rect.height - topH;
-
-    tearTop.style.cssText =
-        `width:${rect.width}px;height:${topH}px;` +
-        `left:${rect.left}px;top:${rect.top}px;` +
-        `border-radius:8px 8px 0 0;` +
-        `transition:transform 0.55s cubic-bezier(.4,0,.2,1),opacity 0.28s ease 0.3s;`;
-    tearTop.innerHTML =
-        `<img src="${src}" style="width:100%;height:${rect.height}px;object-fit:fill;border-radius:8px;" />`;
-
-    tearBot.style.cssText =
-        `width:${rect.width}px;height:${botH}px;` +
-        `left:${rect.left}px;top:${rect.top + topH}px;` +
-        `border-radius:0 0 8px 8px;` +
-        `transition:transform 0.55s cubic-bezier(.4,0,.2,1),opacity 0.28s ease 0.3s;`;
-    tearBot.innerHTML =
-        `<img src="${src}" style="width:100%;height:${rect.height}px;object-fit:fill;border-radius:8px;margin-top:-${topH}px;" />`;
-
-    packImg.style.opacity = '0';
-    packFoilR.style.opacity = '0';
-    packFoilH.style.opacity = '0';
-    packDragZone.style.display = 'none';
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        tearTop.style.transform = `translateY(-${topH + 130}px)`;
-        tearTop.style.opacity   = '0';
-        tearBot.style.transform = `translateY(${botH + 130}px)`;
-        tearBot.style.opacity   = '0';
-    }));
-
-    setTimeout(cutToCarousel, 680);
+function tearOpen() {
+    /* No animation — cut straight to the carousel.
+       Pack layers are already hidden by completePack() before this is called. */
+    cutToCarousel();
 }
 
 function cutToCarousel() {
     tearTop.style.display = 'none';
     tearBot.style.display = 'none';
 
-    /* Hard scene cut — single purple flash frame */
-    sceneFlash.style.display  = 'block';
-    sceneFlash.style.opacity  = '1';
-    sceneFlash.style.transition = 'none';
+    const packScreen = document.getElementById('screen-pack');
+    const carScreen  = document.getElementById('screen-carousel');
 
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        document.getElementById('screen-pack').style.display = 'none';
-        document.getElementById('screen-carousel').style.display = 'block';
-        sceneFlash.style.transition = 'opacity 0.18s ease-out';
-        sceneFlash.style.opacity    = '0';
-        setTimeout(() => { sceneFlash.style.display = 'none'; }, 200);
+    /* Build carousel while pack is still on screen so there's no layout flash */
+    carRotation  = 0;
+    carTargetRot = 0;
+    carVelocity  = 0;
+    buildCarousel();
+    applyTrackTransform();
+    updateLabel();
 
-        carTarget   = 0;
-        carPosition = 0;
-        carVelocity = 0;
-        buildCarousel();
-        updateCarousel();
-        carSpring();
-    }));
+    /* Fade pack out */
+    packScreen.style.transition = 'opacity 0.28s ease';
+    packScreen.style.opacity    = '0';
+
+    setTimeout(() => {
+        packScreen.style.display    = 'none';
+        packScreen.style.opacity    = '';
+        packScreen.style.transition = '';
+
+        /* Fade carousel in */
+        carScreen.style.opacity    = '0';
+        carScreen.style.display    = 'block';
+        void carScreen.offsetWidth;   /* force reflow so the transition fires */
+        carScreen.style.transition = 'opacity 0.32s ease';
+        carScreen.style.opacity    = '1';
+        setTimeout(() => { carScreen.style.transition = ''; }, 360);
+    }, 290);
 }
 
-/* Particles — purple + white */
-function spawnParticles(x, y) {
-    const colors = ['#731fa1','#9b4fd6','#c090f0','#ffffff','#e8d4f8'];
-
-    for (let i = 0; i < 28; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const angle = (i / 28) * Math.PI * 2;
-        const dist  = 55 + Math.random() * 170;
-        const size  = 2 + Math.random() * 5;
-        const dur   = (0.45 + Math.random() * 0.55).toFixed(2);
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        p.style.cssText =
-            `left:${x}px;top:${y}px;` +
-            `width:${size}px;height:${size * 3.2}px;` +
-            `border-radius:2px;background:${color};` +
-            `--tx:${(Math.cos(angle)*dist).toFixed(1)}px;` +
-            `--ty:${(Math.sin(angle)*dist).toFixed(1)}px;` +
-            `--dur:${dur}s;--rot:${Math.floor(Math.random()*360)}deg;` +
-            `box-shadow:0 0 7px 2px ${color}88;`;
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), dur * 1000 + 200);
-    }
-
-    for (let i = 0; i < 10; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const angle = Math.random() * Math.PI * 2;
-        const dist  = 28 + Math.random() * 90;
-        const size  = 10 + Math.random() * 18;
-        const dur   = (0.35 + Math.random() * 0.4).toFixed(2);
-        p.style.cssText =
-            `left:${x}px;top:${y}px;` +
-            `width:${size}px;height:${size}px;border-radius:50%;` +
-            `background:radial-gradient(circle,rgba(179,100,240,0.9) 0%,rgba(115,31,161,0.4) 60%,transparent 100%);` +
-            `--tx:${(Math.cos(angle)*dist).toFixed(1)}px;` +
-            `--ty:${(Math.sin(angle)*dist).toFixed(1)}px;` +
-            `--dur:${dur}s;` +
-            `box-shadow:0 0 14px 5px rgba(115,31,161,0.5);`;
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), dur * 1000 + 200);
-    }
-}
-
-/* Pack drag event wiring */
 packDragZone.addEventListener('mousedown',  (e) => { e.preventDefault(); packDragStart(e.clientX); });
 document.addEventListener('mousemove',      (e) => { if (packDragging) packDragMove(e.clientX); });
 document.addEventListener('mouseup',        ()  => { if (packDragging) packDragCancel(); });
@@ -816,126 +1030,152 @@ document.addEventListener('touchmove',      (e) => { if (packDragging) { e.preve
 document.addEventListener('touchend',       ()  => { if (packDragging) packDragCancel(); });
 
 /* ─────────────────────────────────────────────
-   SCREEN 2 — 3D CAROUSEL
+   SCREEN 2 — CYLINDER CAROUSEL
 ───────────────────────────────────────────── */
 const carouselStage = document.getElementById('carousel-stage');
-const carouselInner = document.getElementById('carousel-inner');
+const carouselTrack = document.getElementById('carousel-track');
 const cardLabel     = document.getElementById('card-label');
 const labelTypeline = document.getElementById('card-label-typeline');
 const labelName     = document.getElementById('card-label-name');
 
-let carPosition = 0;
-let carTarget   = 0;
-let carVelocity = 0;
-let carDragging = false;
-let carDragX0   = 0;
-let carDragY0   = 0;
-let carDragPos0 = 0;
-let carRAF      = null;
-const DRAG_SCALE = 260; /* px per card step */
+let carRotation  = 0;    // current rotation in degrees
+let carTargetRot = 0;    // snapped target
+let carVelocity  = 0;    // spring velocity
+let carDragging  = false;
+let carDragX0    = 0;
+let carDragY0    = 0;
+let carDragRot0  = 0;
+let carRAF       = null;
 
-/* Card config — spacing and depth per offset */
-function cardTransform(offset) {
-    /* offset is float; positive = right of center */
-    const abs = Math.abs(offset);
-
-    /* Horizontal spacing — wider than card width so ±2 clips viewport */
-    const tx = offset * 235;
-
-    /* Depth — push side cards back on Z (parabolic) */
-    const tz = -(abs * abs) * 52;
-
-    /* Rotation */
-    const ry = offset * 25;
-
-    /* Opacity — 0→1, 1→0.75, 2→0.5, clamp beyond */
-    let op;
-    if      (abs <= 1) op = 1 - abs * 0.25;
-    else if (abs <= 2) op = 0.75 - (abs - 1) * 0.25;
-    else               op = Math.max(0, 0.5 - (abs - 2) * 0.5);
-
-    /* Z-index — center card on top */
-    const zi = Math.round(10 - abs * 3);
-
-    return { tx, tz, ry, op, zi };
-}
-
+/* Build: create one .c-card per slot, each with front + back face */
 function buildCarousel() {
-    carouselInner.innerHTML = '';
+    carouselTrack.innerHTML = '';
+
+    /* Compute card dimensions synchronously from the same formula as the CSS
+       so negative margins can be applied before first paint, guaranteeing
+       the cylinder origin stays at screen centre. */
+    const cardW = Math.max(120, Math.min(window.innerWidth * 0.135, 180));
+    const cardH = cardW * (7 / 5);
+
     CARDS.forEach((data, i) => {
-        const el = document.createElement('div');
-        el.className    = 'c-card';
-        el.dataset.index= i;
-        const img       = document.createElement('img');
-        img.src         = data.img;
-        img.alt         = data.name;
-        el.appendChild(img);
-        carouselInner.appendChild(el);
+        const slot = document.createElement('div');
+        slot.className    = 'c-card';
+        slot.dataset.index = i;
+
+        /* Centre each slot at the track origin via negative margins applied
+           before the 3-D transform so they operate in unrotated parent space. */
+        slot.style.marginLeft = `${-cardW / 2}px`;
+        slot.style.marginTop  = `${-cardH / 2}px`;
+
+        const slotAngle = i * CARD_ANGLE;
+        slot.style.transform =
+            `rotateY(${slotAngle}deg) translateZ(${RADIUS}px)`;
+
+        /* Front face — shows card art */
+        const front = document.createElement('div');
+        front.className = 'c-face c-face-front';
+        const fImg = document.createElement('img');
+        fImg.src = data.img;
+        fImg.alt = data.name;
+        front.appendChild(fImg);
+
+        /* Back face — shows cardback, pre-rotated 180° so it faces away when slot faces viewer */
+        const back = document.createElement('div');
+        back.className = 'c-face c-face-back';
+        const bImg = document.createElement('img');
+        bImg.src = 'img/cardback.png';
+        bImg.alt = 'Card Back';
+        back.appendChild(bImg);
+
+        slot.appendChild(front);
+        slot.appendChild(back);
+        carouselTrack.appendChild(slot);
     });
 }
 
-function updateCarousel() {
-    const els = carouselInner.querySelectorAll('.c-card');
-    els.forEach((el, i) => {
-        const offset = i - carPosition;
-        const abs    = Math.abs(offset);
+/* Apply the current rotation to the track */
+function applyTrackTransform() {
+    carouselTrack.style.transform =
+        `rotateX(${TILT_X}deg) rotateY(${carRotation}deg)`;
+}
 
-        if (abs > 2.6) {
-            el.style.opacity        = '0';
-            el.style.pointerEvents  = 'none';
-            return;
-        }
+/* Derive which card index is currently at the front */
+function getActiveIndex() {
+    const steps = Math.round(-carRotation / CARD_ANGLE);
+    return ((steps % N) + N) % N;
+}
 
-        const { tx, tz, ry, op, zi } = cardTransform(offset);
-        el.style.transform      = `translate(-50%,-50%) translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg)`;
-        el.style.opacity        = op;
-        el.style.zIndex         = zi;
-        el.style.pointerEvents  = abs < 2.5 ? 'auto' : 'none';
+/* Update label text + fade + pointer-events on slots */
+function updateLabel() {
+    const steps        = -carRotation / CARD_ANGLE;
+    const nearestStep  = Math.round(steps);
+    const activeIdx    = ((nearestStep % N) + N) % N;
+    const drift        = Math.abs(steps - nearestStep);   // 0 = aligned, 0.5 = halfway
+
+    labelTypeline.textContent = CARDS[activeIdx].typeLine;
+    labelName.textContent     = CARDS[activeIdx].name;
+    cardLabel.style.opacity   = Math.max(0, 1 - drift * 3.5);
+
+    /* Enable pointer-events only on front-facing slots so side/back slots don't eat clicks */
+    carouselTrack.querySelectorAll('.c-card').forEach((el, i) => {
+        /* Net facing angle of this slot, normalised 0-360 */
+        const raw     = ((i * CARD_ANGLE + carRotation) % 360 + 360) % 360;
+        const fromFront = raw > 180 ? 360 - raw : raw;  // 0=viewer, 180=away
+        el.style.pointerEvents = fromFront < 95 ? 'auto' : 'none';
     });
-
-    /* Update label — snap to nearest */
-    const ci = Math.round(carPosition);
-    const clamped = Math.max(0, Math.min(CARDS.length - 1, ci));
-    labelTypeline.textContent = CARDS[clamped].typeLine;
-    labelName.textContent     = CARDS[clamped].name;
-
-    /* Fade label when mid-drag between cards */
-    const drift = Math.abs(carPosition - ci);
-    cardLabel.style.opacity = Math.max(0, 1 - drift * 2.8);
 }
 
-function carSpring() {
-    if (carDragging) { carRAF = requestAnimationFrame(carSpring); return; }
+/* CSS-transition snap — ease-out curve is mathematically guaranteed not to overshoot */
+const SNAP_EASE = 'transform 0.38s cubic-bezier(0.22, 1, 0.36, 1)';
+let snapTimer = null;
 
-    const diff = carTarget - carPosition;
-    if (Math.abs(diff) < 0.00008 && Math.abs(carVelocity) < 0.00008) {
-        carPosition = carTarget;
-        carVelocity = 0;
-        updateCarousel();
-        return;
-    }
-
-    carVelocity = carVelocity * 0.76 + diff * 0.13;
-    carPosition += carVelocity;
-    updateCarousel();
-    carRAF = requestAnimationFrame(carSpring);
+function snapWithTransition() {
+    cancelAnimationFrame(carRAF);
+    carVelocity = 0;
+    carouselTrack.style.transition = SNAP_EASE;
+    carRotation = carTargetRot;
+    applyTrackTransform();
+    updateLabel();
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(() => { carouselTrack.style.transition = ''; }, 420);
 }
 
-/* Carousel drag */
+/* Snap to nearest whole-card position */
+function snapToNearest() {
+    const steps  = carRotation / CARD_ANGLE;
+    carTargetRot = Math.round(steps) * CARD_ANGLE;
+    snapWithTransition();
+}
+
+/* Snap so that card[idx] faces the viewer — takes shortest arc */
+function snapToCard(idx) {
+    const activeIdx = getActiveIndex();
+    const delta_raw = (activeIdx - idx + N) % N;           // 0 to N-1
+    const delta     = delta_raw > N / 2 ? delta_raw - N : delta_raw; // shortest path
+    const curSteps  = Math.round(carRotation / CARD_ANGLE);
+    carTargetRot    = (curSteps + delta) * CARD_ANGLE;
+    snapWithTransition();
+}
+
+/* ── Drag events ── */
 function onCarDragStart(x, y) {
-    carDragging  = true;
-    carDragX0    = x;
-    carDragY0    = y;
-    carDragPos0  = carPosition;
+    /* Kill any active snap transition so drag tracks the cursor instantly */
+    clearTimeout(snapTimer);
+    carouselTrack.style.transition = '';
+    carDragging = true;
+    carDragX0   = x;
+    carDragY0   = y;
+    carDragRot0 = carRotation;
     cancelAnimationFrame(carRAF);
     carouselStage.classList.add('grabbing');
 }
 
 function onCarDragMove(x) {
     if (!carDragging) return;
-    const dx     = x - carDragX0;
-    carPosition  = Math.max(0, Math.min(CARDS.length - 1, carDragPos0 - dx / DRAG_SCALE));
-    updateCarousel();
+    /* Drag left → card to the right comes forward (natural swipe direction) */
+    carRotation = carDragRot0 + (x - carDragX0) * DRAG_DEG;
+    applyTrackTransform();
+    updateLabel();
 }
 
 function onCarDragEnd(x, y, target) {
@@ -946,23 +1186,23 @@ function onCarDragEnd(x, y, target) {
     const dx = Math.abs(x - carDragX0);
     const dy = Math.abs(y - carDragY0);
 
-    carTarget = Math.max(0, Math.min(CARDS.length - 1, Math.round(carPosition)));
-
     /* Treat as click if barely moved */
     if (dx < 8 && dy < 8) {
-        const cardEl = target?.closest?.('.c-card');
-        if (cardEl) {
-            const idx    = parseInt(cardEl.dataset.index);
-            const center = Math.round(carPosition);
-            if (idx === center) {
-                openOverlay(idx);
+        const slot = target?.closest?.('.c-card');
+        if (slot) {
+            const clickedIdx = parseInt(slot.dataset.index);
+            const activeIdx  = getActiveIndex();
+            if (clickedIdx === activeIdx) {
+                snapToNearest();          /* keep position tidy */
+                openOverlay(activeIdx);
                 return;
             }
-            carTarget = idx;
+            snapToCard(clickedIdx);
+            return;
         }
     }
 
-    carSpring();
+    snapToNearest();
 }
 
 carouselStage.addEventListener('mousedown', (e) => {
@@ -992,17 +1232,17 @@ document.addEventListener('touchend', (e) => {
 /* ─────────────────────────────────────────────
    OVERLAY
 ───────────────────────────────────────────── */
-const overlay        = document.getElementById('overlay');
-const overlayBackdrop= document.getElementById('overlay-backdrop');
-const overlayCName   = document.getElementById('overlay-card-name');
-const overlayTLine   = document.getElementById('overlay-type-line');
-const overlayS1      = document.getElementById('overlay-section1');
-const overlayS2      = document.getElementById('overlay-section2');
-const overlayFrontImg= document.getElementById('overlay-front-img');
-const overlayCardInn = document.getElementById('overlay-card-inner');
-const overlayCardSide= document.getElementById('overlay-card-side');
-const overlayShine   = document.getElementById('overlay-card-shine');
-const flipHint       = document.getElementById('overlay-flip-hint');
+const overlay         = document.getElementById('overlay');
+const overlayBackdrop = document.getElementById('overlay-backdrop');
+const overlayCName    = document.getElementById('overlay-card-name');
+const overlayTLine    = document.getElementById('overlay-type-line');
+const overlayS1       = document.getElementById('overlay-section1');
+const overlayS2       = document.getElementById('overlay-section2');
+const overlayFrontImg = document.getElementById('overlay-front-img');
+const overlayCardInn  = document.getElementById('overlay-card-inner');
+const overlayCardSide = document.getElementById('overlay-card-side');
+const overlayShine    = document.getElementById('overlay-card-shine');
+const flipHint        = document.getElementById('overlay-flip-hint');
 
 let isFlipped = false;
 
@@ -1012,14 +1252,14 @@ function openOverlay(idx) {
     overlayCardInn.classList.remove('flipped');
     overlayCardInn.style.transform  = '';
     overlayCardInn.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
-    overlayFrontImg.src     = d.img;
-    overlayCName.textContent= d.name;
-    overlayTLine.textContent= d.typeLine;
-    overlayS1.textContent   = d.about;
-    overlayS2.textContent   = d.why;
-    flipHint.textContent    = 'click to flip';
+    overlayFrontImg.src      = d.img;
+    overlayCName.textContent = d.name;
+    overlayTLine.textContent = d.typeLine;
+    overlayS1.textContent    = d.about;
+    overlayS2.textContent    = d.why;
+    flipHint.textContent     = 'click to flip';
     overlay.classList.add('active');
-    overlay.style.display   = 'flex';
+    overlay.style.display    = 'flex';
 }
 
 function closeOverlay() {
@@ -1027,17 +1267,13 @@ function closeOverlay() {
     overlay.style.display   = 'none';
     isFlipped               = false;
     overlayCardInn.classList.remove('flipped');
-    overlayCardInn.style.transform  = '';
-    overlayShine.style.background   = '';
+    overlayCardInn.style.transform = '';
+    overlayShine.style.background  = '';
 }
 
-/* Backdrop click */
 overlayBackdrop.addEventListener('click', closeOverlay);
-
-/* Escape */
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOverlay(); });
 
-/* Card flip */
 overlayCardSide.addEventListener('click', (e) => {
     e.stopPropagation();
     isFlipped = !isFlipped;
@@ -1047,23 +1283,20 @@ overlayCardSide.addEventListener('click', (e) => {
     flipHint.textContent = isFlipped ? 'click to flip back' : 'click to flip';
 });
 
-/* Parallax tilt + foil shimmer */
 overlayCardSide.addEventListener('mousemove', (e) => {
-    const rect = overlayCardSide.getBoundingClientRect();
-    const dx   = (e.clientX - rect.left - rect.width  / 2) / (rect.width  / 2);
-    const dy   = (e.clientY - rect.top  - rect.height / 2) / (rect.height / 2);
-    const clamp= (v,a,b) => Math.min(Math.max(v,a),b);
-    const rx   = clamp(-dy * 12, -12, 12);
-    const ry   = clamp( dx * 12, -12, 12);
-
+    const rect  = overlayCardSide.getBoundingClientRect();
+    const dx    = (e.clientX - rect.left - rect.width  / 2) / (rect.width  / 2);
+    const dy    = (e.clientY - rect.top  - rect.height / 2) / (rect.height / 2);
+    const clamp = (v,a,b) => Math.min(Math.max(v,a),b);
+    const rx    = clamp(-dy * 12, -12, 12);
+    const ry    = clamp( dx * 12, -12, 12);
     overlayCardInn.style.transition = 'transform 0.08s ease-out';
     overlayCardInn.style.transform  = isFlipped
         ? `rotateY(${180 + ry}deg) rotateX(${rx}deg)`
         : `rotateY(${ry}deg) rotateX(${rx}deg)`;
-
-    const mx   = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
-    const my   = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
-    const hue  = (parseFloat(mx) / 100 * 300 + parseFloat(my) / 100 * 150) % 360;
+    const mx  = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
+    const my  = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
+    const hue = (parseFloat(mx) / 100 * 300 + parseFloat(my) / 100 * 150) % 360;
     overlayShine.style.background =
         `radial-gradient(circle at ${mx}% ${my}%,` +
         `rgba(255,255,255,0.24) 0%,` +
@@ -1078,7 +1311,6 @@ overlayCardSide.addEventListener('mouseleave', () => {
     overlayShine.style.background   = '';
 });
 
-/* Stop info-side clicks from closing */
 document.getElementById('overlay-info-side').addEventListener('click', (e) => e.stopPropagation());
 </script>
 </body>
