@@ -136,7 +136,7 @@ html, body {
 #pack-drag-zone {
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 20%;
+    height: 18%;
     z-index: 10;
     cursor: col-resize;
     border-radius: 8px 8px 0 0;
@@ -164,6 +164,7 @@ html, body {
     background: rgba(255,255,255,0.30);
     pointer-events: none;
 }
+
 
 /* Pokémon TCG Pocket-style fill bar: grows left→right from pack edge */
 #pack-drag-glow {
@@ -573,7 +574,7 @@ html, body {
     <div id="contact-links">
         <a href="https://github.com/jonbttt" target="_blank" rel="noopener">GitHub</a>
         <a href="https://linkedin.com/in/jonbttt" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="https://deckbox.org/users/jonbttt" target="_blank" rel="noopener">Deckbox</a>
+        <a href="https://moxfield.com/users/jonbttt" target="_blank" rel="noopener">Moxfield</a>
     </div>
 </div>
 
@@ -619,44 +620,44 @@ const CARDS = [
     {
         img: 'img/card-1.png',
         name: 'About Me',
-        typeLine: 'Arcum Dagsson',
-        about: 'Final-year CS student at UNSW specialising in Security Engineering, graduating December 2026. Software Engineer at The Golfer Network. Previously AI Engineer at PT Wide Technologies in Indonesia. Targeting grad roles in cybersecurity and SWE.',
-        why: 'Text'
+        typeLine: 'Goblin Engineer',
+        about: 'Hey, I\'m Jonathan! I\'m currently a final-year CS student at UNSW specialising in Security Engineering, graduating December 2026. Previously Software Engineer at The Golfer Network and AI Engineer at PT Wide Technologies Indonesia. Now, I\'m looking for grad roles in cybersecurity and software development. Nice to meet ya!',
+        why: 'I chose Goblin Engineer as my face card because its flavor truly fits me. He\'s a tinkerer. The art shows someone surrounded by their work, actively in the middle of it. In terms of function, the Goblin Engineer puts an artifact into the graveyard and recurs a different one from it; build something, break it, pull out something more useful. This is my process within security engineering, and something I genuinely love doing.'
     },
     {
         img: 'img/card-2.png',
         name: 'Projects',
-        typeLine: 'Goblin Engineer',
-        about: 'List of projects here',
-        why: 'Text'
+        typeLine: 'Mizzix of the Izmagnus',
+        about: 'Sentry-XDP (in progress) - A network IDS using eBFP and XDP technology, more details on it later\n\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on Linux kernel v6.\n\nHome Lab SIEM - A full detection engineering pipeline at home. ELK Stack with OTX AlienVault threat intelligence feeds and Jira ticketing integration on a Kali Linux VM.',
+        why: 'Mizzix\'s ability lets you get an experience counter every time you cast an instant or sorcery with a mana cost greater than the number of counters you have, and those counters reduce the cost of future spells. The more I\'ve done, the easier the next thing becomes. That\'s what projects mean to me.'
     },
     {
         img: 'img/card-3.png',
         name: 'Experience',
         typeLine: 'Snapcaster Mage',
-        about: 'Text',
-        why: 'Text'
+        about: 'UNSW - Scrum Master for a team of developers building a mixed reality application for a UNSW professor. Led sprint planning, managed delivery, and contributed to the Unity codebase directly.\n\nThe Golfer Network - Software Engineer building full-stack products. Worked across the entire delivery pipeline and meaningfully reduced backend turnaround time in production.\n\nWide Technologies Indonesia - AI Engineer working with and learning LLMs, computer vision, and machine learning pipelines.',
+        why: 'I chose Snapcaster Mage mainly because of the mechanic, flashback. Flashback allows me to cast that instant or sorcery from my graveyard and exiles it, allowing me to reuse something I previously casted. My experiences act in the same way that I\'m able to reuse them for whatever comes next.'
     },
     {
         img: 'img/card-4.png',
         name: 'Lifting',
         typeLine: 'Zilortha, Strength Incarnate',
-        about: '',
-        why: ''
+        about: 'After a busy day, I always love training. I\'m an amateur powerlifter in the 72kg weight class with around 2.5 yrs of training. I plan on competing soon this year in powerlifting and joining an amateur bodybuilding comp sometime next year.',
+        why: 'Zilortha makes your creatures deal damage based on power rather than toughness, raw strength over endurance. That\'s what powerlifting is to me. Also, the art is a cool dinosaur.'
     },
     {
         img: 'img/card-5.png',
-        name: 'MTG',
+        name: 'Hobbies',
         typeLine: 'Mox Amber',
-        about: 'I\'m an Avid MTG player, mainly Commander with friends and Arena on downtime. I currently have 5 decks which you can view on my Moxfield: moxfield.com/users/jonbttt',
-        why: ''
+        about: 'I\'m an Avid MTG player, mainly Commander with friends and Arena on downtime. You can view my Commander decks on my Moxfield: moxfield.com/users/jonbttt (It\'s also linked below in the previous section). I\'m also a big video game nerd with my top 5 being Factorio, Stellaris, Cruelty Squad, Risk of Rain 2, and Deadlock. Other than that, I enjoy fishing, thrifting, and cafe-hopping with friends.',
+        why: 'A Mox is a 0-cost artifact that generates value as soon as it comes down. I specifically chose the Mox Amber as it has an added prerequisite that felt right. Hobbies only show up fully when everything else (the work, the training, the ambition) is already there.'
     },
     {
         img: 'img/card-6.png',
         name: 'Travelling',
         typeLine: 'Explore',
-        about: '',
-        why: ''
+        about: 'Originally from Jakarta, now based in Sydney. I\'ve travelled across Asia and parts of Europe. In the coming months, I really hope I\'ll be able to see more of Australia (I\'d love to go hiking around Kosciuszko National Park and visit Uluru one day).',
+        why: 'This card speaks for itself, both in terms of the card\'s function and flavor.'
     }
 ];
 
@@ -686,7 +687,7 @@ const sceneFlash      = document.getElementById('scene-flash');
 let packOpened   = false;
 let packDragging = false;
 let packDragX0   = 0;
-const PACK_THRESHOLD = 0.70;
+const PACK_THRESHOLD = 0.98;
 
 /* ── Flap bend ────────────────────────────────────────────────────────── */
 function showPackFlap() {
