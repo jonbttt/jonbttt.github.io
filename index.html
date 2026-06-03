@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jonathan — Portfolio</title>
+    <title>jonbttt's Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
@@ -538,6 +538,26 @@ html, body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: rgba(115,31,161,0.3); border-radius: 2px; }
+
+/* ── Overlay back button ── */
+#overlay-back {
+    position: absolute;
+    top: 1.4rem;
+    left: 1.6rem;
+    z-index: 2;
+    background: none;
+    border: none;
+    color: var(--white);
+    font-family: var(--font);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.38;
+    cursor: pointer;
+    padding: 0.4rem 0;
+    transition: opacity 0.18s;
+}
+#overlay-back:hover { opacity: 1; }
     </style>
 </head>
 <body>
@@ -582,6 +602,7 @@ html, body {
 <div id="overlay">
     <div id="overlay-backdrop"></div>
     <div id="overlay-inner">
+        <button id="overlay-back" aria-label="Back">&#8592; back</button>
         <div id="overlay-card-side">
             <div id="overlay-card-3d">
                 <div id="overlay-card-inner">
@@ -660,6 +681,13 @@ const CARDS = [
         why: 'This card speaks for itself, both in terms of the card\'s function and flavor.'
     }
 ];
+
+/* Kick off image loads immediately so they are cached before the carousel
+   is ever built — prevents blank cards on first open. */
+(function preloadImages() {
+    CARDS.forEach(card => { const i = new Image(); i.src = card.img; });
+    const b = new Image(); b.src = 'img/cardback.png';
+}());
 
 const N          = CARDS.length;       // 6
 const CARD_ANGLE = 360 / N;            // 60° per card
@@ -1273,6 +1301,7 @@ function closeOverlay() {
 }
 
 overlayBackdrop.addEventListener('click', closeOverlay);
+document.getElementById('overlay-back').addEventListener('click', closeOverlay);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOverlay(); });
 
 overlayCardSide.addEventListener('click', (e) => {
@@ -1281,7 +1310,6 @@ overlayCardSide.addEventListener('click', (e) => {
     overlayCardInn.classList.toggle('flipped', isFlipped);
     overlayCardInn.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
     overlayCardInn.style.transform  = isFlipped ? 'rotateY(180deg)' : '';
-    flipHint.textContent = isFlipped ? 'click to flip back' : 'click to flip';
 });
 
 overlayCardSide.addEventListener('mousemove', (e) => {
