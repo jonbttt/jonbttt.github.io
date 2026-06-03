@@ -283,7 +283,7 @@ html, body {
 /* Each card slot: positioned around the cylinder */
 .c-card {
     position: absolute;
-    width: clamp(120px, 13.5vw, 180px);
+    width: clamp(150px, 16.875vw, 225px);
     aspect-ratio: 5 / 7;
     /* translateZ(RADIUS) applied by JS */
     transform-style: preserve-3d;
@@ -575,6 +575,41 @@ html, body {
     transition: opacity 0.18s;
 }
 #overlay-back:hover { opacity: 1; }
+
+/* ── Mobile overlay layout ── */
+@media (max-width: 680px) {
+    #overlay-inner {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    #overlay-card-side {
+        width: 100%;
+        flex-shrink: 0;
+        height: 52vw;
+        min-height: 220px;
+        max-height: 320px;
+    }
+
+    #overlay-card-3d {
+        width: clamp(120px, 36vw, 180px);
+    }
+
+    #overlay-info-side {
+        flex: 1;
+        padding: 2rem 1.6rem 2.4rem;
+        overflow-y: visible;
+    }
+
+    #overlay-card-name {
+        font-size: clamp(1.3rem, 6vw, 2rem);
+    }
+
+    #overlay-back {
+        top: 0.8rem;
+        left: 1rem;
+    }
+}
     </style>
 </head>
 <body>
@@ -659,21 +694,21 @@ const CARDS = [
         img: 'img/card-1.png',
         name: 'About Me',
         typeLine: 'Goblin Engineer',
-        about: 'Hey, I\'m Jonathan! I\'m currently a final-year CS student at UNSW specialising in Security Engineering, graduating December 2026. Previously Software Engineer at The Golfer Network and AI Engineer at PT Wide Technologies Indonesia. Now, I\'m looking for grad roles in cybersecurity and software development. Nice to meet ya!',
+        about: 'Hey, I\'m Jonathan! I\'m currently a final-year CS student at UNSW specialising in Security Engineering, graduating September 2026. Previously Software Engineer at The Golfer Network and AI Engineer at PT Wide Technologies Indonesia. Now, I\'m looking for grad roles in cybersecurity and software development. Nice to meet ya!',
         why: 'I chose Goblin Engineer as my face card because its flavor truly fits me. He\'s a tinkerer. The art shows someone surrounded by their work, actively in the middle of it. In terms of function, the Goblin Engineer puts an artifact into the graveyard and recurs a different one from it; build something, break it, pull out something more useful. This is my process within security engineering, and something I genuinely love doing.'
     },
     {
         img: 'img/card-2.png',
         name: 'Projects',
         typeLine: 'Mizzix of the Izmagnus',
-        about: 'Sentry-XDP (in progress) - A network IDS using eBFP and XDP technology, more details on it later\n\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on Linux kernel v6.\n\nHome Lab SIEM - A full detection engineering pipeline at home. ELK Stack with OTX AlienVault threat intelligence feeds and Jira ticketing integration on a Kali Linux VM.',
+        about: 'Sentry-XDP (in progress) - A network IDS using eBFP and XDP technology, more details on it later\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on Linux kernel v6.\nHome Lab SIEM - A full detection engineering pipeline at home. ELK Stack with OTX AlienVault threat intelligence feeds and Jira ticketing integration on a Kali Linux VM.',
         why: 'Mizzix\'s ability lets you get an experience counter every time you cast an instant or sorcery with a mana cost greater than the number of counters you have, and those counters reduce the cost of future spells. The more I\'ve done, the easier the next thing becomes. That\'s what projects mean to me.'
     },
     {
         img: 'img/card-3.png',
         name: 'Experience',
         typeLine: 'Snapcaster Mage',
-        about: 'UNSW - Scrum Master for a team of developers building a mixed reality application for a UNSW professor. Led sprint planning, managed delivery, and contributed to the Unity codebase directly.\n\nThe Golfer Network - Software Engineer building full-stack products. Worked across the entire delivery pipeline and meaningfully reduced backend turnaround time in production.\n\nWide Technologies Indonesia - AI Engineer working with and learning LLMs, computer vision, and machine learning pipelines.',
+        about: 'UNSW - Scrum Master for a team of developers building a mixed reality application for a UNSW professor. Led sprint planning, managed delivery, and contributed to the Unity codebase directly.\nThe Golfer Network - Software Engineer building full-stack products. Worked across the entire delivery pipeline and meaningfully reduced backend turnaround time in production.\nWide Technologies Indonesia - AI Engineer working with and learning LLMs, computer vision, and machine learning pipelines.',
         why: 'I chose Snapcaster Mage mainly because of the mechanic, flashback. Flashback allows me to cast that instant or sorcery from my graveyard and exiles it, allowing me to reuse something I previously casted. My experiences act in the same way that I\'m able to reuse them for whatever comes next.'
     },
     {
@@ -1100,7 +1135,7 @@ function buildCarousel() {
     /* Compute card dimensions synchronously from the same formula as the CSS
        so negative margins can be applied before first paint, guaranteeing
        the cylinder origin stays at screen centre. */
-    const cardW = Math.max(120, Math.min(window.innerWidth * 0.135, 180));
+    const cardW = Math.max(150, Math.min(window.innerWidth * 0.16875, 225));
     const cardH = cardW * (7 / 5);
 
     CARDS.forEach((data, i) => {
