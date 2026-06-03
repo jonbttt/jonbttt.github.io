@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
     <style>
-/* ─── Reset ─── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
@@ -28,9 +27,7 @@ html, body {
     user-select: none;
 }
 
-/* ═══════════════════════════════
-   SCREEN 1 — PACK
-═══════════════════════════════ */
+/* ── SCREEN 1: PACK ── */
 #screen-pack {
     position: fixed;
     inset: 0;
@@ -46,17 +43,15 @@ html, body {
 #pack-container {
     position: relative;
     width: clamp(150px, 16vw, 220px);
-    /* No aspect-ratio — height is driven by the image so container = image exactly */
     border-radius: 8px;
     overflow: hidden;
 }
 
 #pack-img {
-    /* position: relative so it drives the container's height */
     position: relative;
     display: block;
     width: 100%;
-    height: auto;   /* natural aspect ratio — no letterboxing */
+    height: auto;
     border-radius: 8px;
     pointer-events: none;
     -webkit-user-drag: none;
@@ -82,7 +77,6 @@ html, body {
         hsla(360,100%,70%,1) 100%
     );
     transition: transform 0.15s ease;
-    /* Clip foil to the exact alpha shape of the pack PNG */
     -webkit-mask-image: url('img/pack.png');
     -webkit-mask-size: contain;
     -webkit-mask-repeat: no-repeat;
@@ -110,29 +104,6 @@ html, body {
     mask-position: center;
 }
 
-/* ── Top flap that bends/peels during the cut drag ─────────────────────── */
-/* Wrapper owns the perspective frustum; inner owns the rotateX hinge.
-   Perspective on a PARENT gives a proper 3D vanishing point — perspective()
-   inline in a transform list doesn't produce the same result. */
-#pack-flap-wrap {
-    display: none;
-    position: fixed;
-    pointer-events: none;
-    z-index: 8;
-    overflow: visible;
-    /* perspective + perspective-origin set via JS so they match the flap size */
-}
-#pack-flap {
-    width: 100%; height: 100%;
-    overflow: hidden;
-    transform-origin: 50% 100%;   /* hinge at the cut line (bottom of flap) */
-}
-#pack-flap img {
-    display: block;
-    -webkit-user-drag: none;
-    user-select: none;
-}
-
 #pack-drag-zone {
     position: absolute;
     top: 0; left: 0; right: 0;
@@ -142,7 +113,6 @@ html, body {
     border-radius: 8px 8px 0 0;
 }
 
-/* guide line — always visible when zone active, static dashed tear guide */
 #pack-drag-zone::after {
     content: '';
     position: absolute;
@@ -154,7 +124,6 @@ html, body {
     pointer-events: none;
 }
 
-/* left notch / perforation mark */
 #pack-drag-zone::before {
     content: '';
     position: absolute;
@@ -165,8 +134,6 @@ html, body {
     pointer-events: none;
 }
 
-
-/* Pokémon TCG Pocket-style fill bar: grows left→right from pack edge */
 #pack-drag-glow {
     position: absolute;
     bottom: 0; left: 0;
@@ -180,7 +147,6 @@ html, body {
     transition: none;
 }
 
-/* glowing tip at the right edge of the fill bar */
 #pack-drag-glow::after {
     content: '';
     position: absolute;
@@ -190,26 +156,6 @@ html, body {
     border-radius: 50%;
     background: radial-gradient(circle, #fff 0%, #c090f0 35%, rgba(115,31,161,0.5) 65%, transparent 100%);
     filter: blur(1.5px);
-}
-
-#pack-progress {
-    position: absolute;
-    bottom: -7px; left: 8%; right: 8%;
-    height: 2px;
-    background: rgba(255,255,255,0.07);
-    border-radius: 1px;
-    overflow: hidden;
-    display: none;
-    z-index: 11;
-}
-
-#pack-progress-bar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, rgba(115,31,161,0.5), #9b4fd6, #c090f0);
-    border-radius: 1px;
-    box-shadow: 0 0 10px rgba(115,31,161,0.9);
-    transition: width 0.04s linear;
 }
 
 #pack-hint {
@@ -223,27 +169,7 @@ html, body {
     font-variant: small-caps;
 }
 
-#tear-top, #tear-bottom {
-    position: fixed;
-    pointer-events: none;
-    z-index: 80;
-    overflow: hidden;
-}
-
-
-#scene-flash {
-    position: fixed;
-    inset: 0;
-    background: var(--purple);
-    z-index: 500;
-    opacity: 0;
-    pointer-events: none;
-    display: none;
-}
-
-/* ═══════════════════════════════
-   SCREEN 2 — CYLINDER CAROUSEL
-═══════════════════════════════ */
+/* ── SCREEN 2: CAROUSEL ── */
 #screen-carousel {
     position: fixed;
     inset: 0;
@@ -256,7 +182,6 @@ html, body {
     animation: overlayFadeIn 0.3s ease both;
 }
 
-/* The perspective container — fills screen minus label zone */
 #carousel-stage {
     position: absolute;
     top: 0; left: 0; right: 0;
@@ -271,26 +196,21 @@ html, body {
 
 #carousel-stage.grabbing { cursor: grabbing; }
 
-/* The rotating cylinder — its rotateY is driven by JS */
 #carousel-track {
     position: relative;
     width: 0; height: 0;
     transform-style: preserve-3d;
-    /* rotateX tilt + rotateY spin set by JS */
     will-change: transform;
 }
 
-/* Each card slot: positioned around the cylinder */
 .c-card {
     position: absolute;
     width: clamp(150px, 16.875vw, 225px);
     aspect-ratio: 5 / 7;
-    /* translateZ(RADIUS) applied by JS */
     transform-style: preserve-3d;
     cursor: pointer;
 }
 
-/* Front and back faces — both hidden when facing away */
 .c-face {
     position: absolute;
     inset: 0;
@@ -309,12 +229,8 @@ html, body {
     -webkit-user-drag: none;
 }
 
-/* Back face is pre-rotated 180° so it appears when the slot faces away */
-.c-face-back {
-    transform: rotateY(180deg);
-}
+.c-face-back { transform: rotateY(180deg); }
 
-/* Label strip — bottom center */
 #card-label {
     position: absolute;
     bottom: 44px;
@@ -346,7 +262,6 @@ html, body {
     line-height: 1.1;
 }
 
-/* Contact links — bottom right */
 #contact-links {
     position: absolute;
     bottom: 26px;
@@ -368,9 +283,7 @@ html, body {
 
 #contact-links a:hover { opacity: 1; }
 
-/* ═══════════════════════════════
-   OVERLAY
-═══════════════════════════════ */
+/* ── OVERLAY ── */
 #overlay {
     position: fixed;
     inset: 0;
@@ -547,16 +460,9 @@ html, body {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: rgba(115,31,161,0.3); border-radius: 2px; }
 
-#overlay-info-side *::selection {
-    background: #731fa1;
-    color: #ffffff;
-}
-#overlay-info-side *::-moz-selection {
-    background: #731fa1;
-    color: #ffffff;
-}
+#overlay-info-side *::selection     { background: #731fa1; color: #ffffff; }
+#overlay-info-side *::-moz-selection { background: #731fa1; color: #ffffff; }
 
-/* ── Overlay back button ── */
 #overlay-back {
     position: absolute;
     top: 1.4rem;
@@ -576,13 +482,8 @@ html, body {
 }
 #overlay-back:hover { opacity: 1; }
 
-/* ── Mobile overlay layout ── */
 @media (max-width: 680px) {
-    #overlay-inner {
-        flex-direction: column;
-        overflow-y: auto;
-    }
-
+    #overlay-inner { flex-direction: column; overflow-y: auto; }
     #overlay-card-side {
         width: 100%;
         flex-shrink: 0;
@@ -590,31 +491,16 @@ html, body {
         min-height: 220px;
         max-height: 320px;
     }
-
-    #overlay-card-3d {
-        width: clamp(120px, 36vw, 180px);
-    }
-
-    #overlay-info-side {
-        flex: 1;
-        padding: 2rem 1.6rem 2.4rem;
-        overflow-y: visible;
-    }
-
-    #overlay-card-name {
-        font-size: clamp(1.3rem, 6vw, 2rem);
-    }
-
-    #overlay-back {
-        top: 0.8rem;
-        left: 1rem;
-    }
+    #overlay-card-3d { width: clamp(120px, 36vw, 180px); }
+    #overlay-info-side { flex: 1; padding: 2rem 1.6rem 2.4rem; overflow-y: visible; }
+    #overlay-card-name { font-size: clamp(1.3rem, 6vw, 2rem); }
+    #overlay-back { top: 0.8rem; left: 1rem; }
 }
     </style>
 </head>
 <body>
 
-<!-- ═══ SCREEN 1: PACK ═══ -->
+<!-- SCREEN 1: PACK -->
 <div id="screen-pack">
     <div id="pack-container">
         <img id="pack-img" src="img/pack.png" alt="Booster Pack" draggable="false" />
@@ -622,19 +508,12 @@ html, body {
         <div id="pack-foil-highlight"></div>
         <div id="pack-drag-zone">
             <div id="pack-drag-glow"></div>
-            <div id="pack-progress">
-                <div id="pack-progress-bar"></div>
-            </div>
         </div>
-    </div>
-    <!-- flap lives outside pack-container so CSS overflow:hidden doesn't clip the 3D bend -->
-    <div id="pack-flap-wrap">
-        <div id="pack-flap"><img src="img/pack.png" draggable="false" /></div>
     </div>
     <p id="pack-hint">SLIDE TO OPEN</p>
 </div>
 
-<!-- ═══ SCREEN 2: CAROUSEL ═══ -->
+<!-- SCREEN 2: CAROUSEL -->
 <div id="screen-carousel">
     <div id="carousel-stage">
         <div id="carousel-track"></div>
@@ -650,7 +529,7 @@ html, body {
     </div>
 </div>
 
-<!-- ═══ OVERLAY ═══ -->
+<!-- OVERLAY -->
 <div id="overlay">
     <div id="overlay-backdrop"></div>
     <div id="overlay-inner">
@@ -679,16 +558,10 @@ html, body {
     </div>
 </div>
 
-<div id="tear-top"></div>
-<div id="tear-bottom"></div>
-<div id="scene-flash"></div>
-
 <script>
 'use strict';
 
-/* ─────────────────────────────────────────────
-   CARD DATA
-───────────────────────────────────────────── */
+// ── CARD DATA ──
 const CARDS = [
     {
         img: 'img/card-1.png',
@@ -734,89 +607,41 @@ const CARDS = [
     }
 ];
 
-/* Kick off image loads immediately so they are cached before the carousel
-   is ever built — prevents blank cards on first open. */
+// Preload images so they're cached before the carousel builds
 (function preloadImages() {
     CARDS.forEach(card => { const i = new Image(); i.src = card.img; });
     const b = new Image(); b.src = 'img/cardback.png';
 }());
 
-const N          = CARDS.length;       // 6
-const CARD_ANGLE = 360 / N;            // 60° per card
-const TILT_X     = -5;                   // degrees — slight downward tilt for depth
-const RADIUS     = 380;                // cylinder radius in px
-const DRAG_DEG   = 0.36;              // degrees of rotation per pixel dragged
+const N          = CARDS.length;
+const CARD_ANGLE = 360 / N;
+const TILT_X     = -5;
+const RADIUS     = 380;
+const DRAG_DEG   = 0.36;
 
-/* ─────────────────────────────────────────────
-   SCREEN 1 — PACK OPENING
-───────────────────────────────────────────── */
-const packContainer   = document.getElementById('pack-container');
-const packImg         = document.getElementById('pack-img');
-const packFoilR       = document.getElementById('pack-foil-rainbow');
-const packFoilH       = document.getElementById('pack-foil-highlight');
-const packDragZone    = document.getElementById('pack-drag-zone');
-const packDragGlow    = document.getElementById('pack-drag-glow');
-const packProgress    = document.getElementById('pack-progress');
-const packProgressBar = document.getElementById('pack-progress-bar');
-const packFlapWrap    = document.getElementById('pack-flap-wrap');
-const packFlap        = document.getElementById('pack-flap');
-const tearTop         = document.getElementById('tear-top');
-const tearBot         = document.getElementById('tear-bottom');
-const sceneFlash      = document.getElementById('scene-flash');
+// ── PACK OPENING ──
+const packContainer = document.getElementById('pack-container');
+const packImg       = document.getElementById('pack-img');
+const packFoilR     = document.getElementById('pack-foil-rainbow');
+const packFoilH     = document.getElementById('pack-foil-highlight');
+const packDragZone  = document.getElementById('pack-drag-zone');
+const packDragGlow  = document.getElementById('pack-drag-glow');
 
 let packOpened   = false;
 let packDragging = false;
-let packDragX0   = 0;
 const PACK_THRESHOLD = 0.98;
 
-/* ── Flap bend ────────────────────────────────────────────────────────── */
-function showPackFlap() {
-    const rect  = packContainer.getBoundingClientRect();
-    const flapH = rect.height * 0.18;
-    packFlapWrap.style.cssText =
-        `display:block;position:fixed;overflow:visible;pointer-events:none;z-index:8;` +
-        `left:${rect.left}px;top:${rect.top}px;` +
-        `width:${rect.width}px;height:${flapH}px;` +
-        `perspective:500px;perspective-origin:50% 100%;`;
-    packFlap.style.display = 'block';
-    const img = packFlap.querySelector('img');
-    img.style.cssText =
-        `width:${rect.width}px;height:${rect.height}px;display:block;-webkit-user-drag:none;`;
-    packFlap.style.filter = 'drop-shadow(0 6px 18px rgba(0,0,0,0.85))';
-}
-
-function updatePackBend(progress) {
-    const angle  = progress * 60;
-    const bright = 1 + progress * 0.18;
-    packFlap.style.transform = `rotateX(${angle}deg)`;
-    packFlap.style.filter    =
-        `drop-shadow(0 ${3 + progress * 14}px ${8 + progress * 22}px rgba(0,0,0,0.92))` +
-        ` brightness(${bright})`;
-}
-
-function hidePackFlap() {
-    packFlapWrap.style.display = 'none';
-    packFlap.style.transform   = '';
-    packFlap.style.filter      = '';
-}
-
-/* ── Cut-spark canvas ──────────────────────────────────────────────────────
-   Sparks scatter from random points along the already-opened segment of the
-   cut line [cutLineLeft → cutCursorX].  They only appear when the user is
-   actively dragging (moving), not on hold-in-place.
-   A thin glowing line is also drawn over the opened segment each frame.
-──────────────────────────────────────────────────────────────────────────── */
-let cutCanvas  = null, cutCtx = null;
-let cutParts   = [];
-let cutRAF     = null;
-let cutCursorX = 0, cutCursorY = 0;   /* right edge of the opened cut */
-let cutLineLeft = 0;                   /* left edge (pack's left side) */
-let cutMoved   = false;                /* true only when cursor actually moved */
+// Cut-spark canvas state
+let cutCanvas   = null, cutCtx = null;
+let cutParts    = [];
+let cutRAF      = null;
+let cutCursorX  = 0, cutCursorY = 0;
+let cutLineLeft = 0;
+let cutMoved    = false;
 
 function startCutCanvas() {
     cutCanvas = document.createElement('canvas');
-    cutCanvas.style.cssText =
-        'position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;';
+    cutCanvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;';
     cutCanvas.width  = window.innerWidth;
     cutCanvas.height = window.innerHeight;
     document.body.appendChild(cutCanvas);
@@ -829,16 +654,13 @@ function startCutCanvas() {
 function stopCutCanvas() {
     cancelAnimationFrame(cutRAF);
     if (cutCanvas) { cutCanvas.remove(); cutCanvas = null; cutCtx = null; }
-    cutParts  = [];
-    cutMoved  = false;
+    cutParts = [];
+    cutMoved = false;
 }
 
 function spawnCutSparks() {
-    /* Only spawn along the segment that has actually been cut */
     const openedW = cutCursorX - cutLineLeft;
     if (openedW < 2) return;
-
-    /* 1 spark per call — random point along the opened segment */
     const sx    = cutLineLeft + Math.random() * openedW;
     const sy    = cutCursorY;
     const up    = Math.random() > 0.5;
@@ -846,8 +668,7 @@ function spawnCutSparks() {
     const vy    = (up ? -1 : 1) * (0.25 + Math.random() * 0.9);
     const white = Math.random() > 0.45;
     cutParts.push({
-        x: sx, y: sy,
-        vx, vy,
+        x: sx, y: sy, vx, vy,
         life  : 1,
         decay : 0.016 + Math.random() * 0.014,
         len   : 5 + Math.random() * 12,
@@ -859,19 +680,16 @@ function tickCutCanvas() {
     cutRAF = requestAnimationFrame(tickCutCanvas);
     if (!cutCtx) return;
 
-    /* Only spawn particles if the user is dragging AND has moved the cursor */
     if (packDragging && cutMoved) {
         spawnCutSparks();
-        cutMoved = false;   /* reset — wait for next genuine move */
+        cutMoved = false;
     }
 
     cutCtx.clearRect(0, 0, cutCanvas.width, cutCanvas.height);
     cutCtx.globalCompositeOperation = 'lighter';
 
-    /* Glowing cut-line drawn over the whole opened segment */
     const openedW = cutCursorX - cutLineLeft;
     if (packDragging && openedW > 1) {
-        /* Outer glow */
         const lineGrd = cutCtx.createLinearGradient(cutLineLeft, 0, cutCursorX, 0);
         lineGrd.addColorStop(0,   'rgba(115,31,161,0)');
         lineGrd.addColorStop(0.3, 'rgba(155,79,214,0.35)');
@@ -882,22 +700,18 @@ function tickCutCanvas() {
         cutCtx.strokeStyle = lineGrd;
         cutCtx.lineWidth   = 4;
         cutCtx.stroke();
-        /* Sharp bright core */
         cutCtx.beginPath();
         cutCtx.moveTo(cutLineLeft, cutCursorY);
         cutCtx.lineTo(cutCursorX,  cutCursorY);
-        cutCtx.strokeStyle = `rgba(255,255,255,0.55)`;
+        cutCtx.strokeStyle = 'rgba(255,255,255,0.55)';
         cutCtx.lineWidth   = 1;
         cutCtx.stroke();
     }
 
-    /* Spark particles */
     const alive = [];
     for (const p of cutParts) {
-        p.vx *= 0.93;
-        p.vy *= 0.93;
-        p.x  += p.vx;
-        p.y  += p.vy;
+        p.vx *= 0.93; p.vy *= 0.93;
+        p.x  += p.vx; p.y  += p.vy;
         p.life -= p.decay;
         if (p.life <= 0) continue;
         alive.push(p);
@@ -905,10 +719,7 @@ function tickCutCanvas() {
         const a  = p.life;
         const sp = Math.hypot(p.vx, p.vy) || 0.001;
         const nx = p.vx / sp, ny = p.vy / sp;
-
-        const grd = cutCtx.createLinearGradient(
-            p.x - nx * p.len, p.y - ny * p.len, p.x, p.y
-        );
+        const grd = cutCtx.createLinearGradient(p.x - nx * p.len, p.y - ny * p.len, p.x, p.y);
         const [r, g, b] = p.col;
         grd.addColorStop(0, `rgba(${r},${g},${b},0)`);
         grd.addColorStop(1, `rgba(${r},${g},${b},${a * 0.85})`);
@@ -918,7 +729,6 @@ function tickCutCanvas() {
         cutCtx.strokeStyle = grd;
         cutCtx.lineWidth   = 1.1;
         cutCtx.stroke();
-
         cutCtx.beginPath();
         cutCtx.arc(p.x, p.y, 1.0, 0, Math.PI * 2);
         cutCtx.fillStyle = `rgba(255,255,255,${a * 0.8})`;
@@ -928,18 +738,12 @@ function tickCutCanvas() {
     cutParts = alive;
 }
 
-/* Foil shimmer */
-let idleT     = 0;
-let idleRAF   = null;
-let isIdle    = true;
-let idleTimer = null;
+// Foil shimmer
+let idleT = 0, idleRAF = null, isIdle = true, idleTimer = null;
 
 function updatePackFoil(mx, my) {
-    /* Gradient angle shifts subtly with mouse X (±11°), not a full rotation */
     const angle = 130 + (mx - 50) * 0.22;
-    /* Hue offset cycles gently across the spectrum as mouse moves */
     const hue   = (mx / 100 * 160 + my / 100 * 80) % 360;
-
     packFoilR.style.background =
         `linear-gradient(${angle}deg,` +
         `hsla(${hue},100%,68%,1) 0%,` +
@@ -950,8 +754,7 @@ function updatePackFoil(mx, my) {
         `hsla(${(hue + 295) % 360},100%,70%,1) 71%,` +
         `hsla(${(hue + 330) % 360},100%,70%,1) 85%,` +
         `hsla(${hue},100%,68%,1) 100%)`;
-    packFoilR.style.transform = ''; /* no rotation — was causing overflow bleed */
-
+    packFoilR.style.transform = '';
     packFoilH.style.background =
         `radial-gradient(circle at ${mx}% ${my}%,` +
         `rgba(255,255,255,0.22) 0%,` +
@@ -987,7 +790,6 @@ document.addEventListener('mousemove', (e) => {
     const dy    = (e.clientY - cy) / (rect.height / 2);
     const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 
-    /* Parallax tilt — identical behaviour to the overlay card */
     if (!packDragging) {
         packContainer.style.transition = 'transform 0.08s ease-out';
         packContainer.style.transform  =
@@ -995,7 +797,6 @@ document.addEventListener('mousemove', (e) => {
             ` rotateX(${clamp(-dy * 8, -8, 8)}deg)`;
     }
 
-    /* Foil shimmer — position in % relative to pack */
     const mx = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
     const my = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
     stopIdle();
@@ -1008,15 +809,13 @@ document.addEventListener('mouseleave', () => {
     if (!packOpened) { resetPackTilt(); goIdle(); }
 });
 
-/* Drag logic */
 function packDragStart(x) {
     if (packOpened) return;
-    const rect   = packContainer.getBoundingClientRect();
-    cutLineLeft  = rect.left;                        /* left edge of cut segment */
-    cutCursorX   = rect.left;                        /* nothing opened yet */
-    cutCursorY   = rect.top + rect.height * 0.18;
+    const rect  = packContainer.getBoundingClientRect();
+    cutLineLeft = rect.left;
+    cutCursorX  = rect.left;
+    cutCursorY  = rect.top + rect.height * 0.18;
     packDragging = true;
-    packDragX0   = x;
     packDragGlow.style.display = 'block';
     packDragGlow.style.width   = '0px';
     startCutCanvas();
@@ -1028,18 +827,13 @@ function packDragMove(x) {
     const rect = packContainer.getBoundingClientRect();
     const relX = x - rect.left;
     const prog = Math.max(0, Math.min(1, relX / rect.width));
-
-    /* Fill bar */
     packDragGlow.style.width = Math.max(0, relX) + 'px';
-
-    /* Advance the right edge of the opened segment to the cursor */
     const newX = Math.max(cutLineLeft, Math.min(x, rect.right));
     if (newX !== cutCursorX) {
         cutCursorX = newX;
         cutCursorY = rect.top + rect.height * 0.18;
-        cutMoved   = true;   /* tells tickCutCanvas to emit a spark this frame */
+        cutMoved   = true;
     }
-
     if (prog >= PACK_THRESHOLD) completePack();
 }
 
@@ -1060,31 +854,19 @@ function completePack() {
     packDragGlow.style.display = 'none';
     stopCutCanvas();
     resetPackTilt();
-    tearOpen();
-}
-
-function tearOpen() {
-    /* No animation — cut straight to the carousel.
-       Pack layers are already hidden by completePack() before this is called. */
     cutToCarousel();
 }
 
 function cutToCarousel() {
-    tearTop.style.display = 'none';
-    tearBot.style.display = 'none';
-
     const packScreen = document.getElementById('screen-pack');
     const carScreen  = document.getElementById('screen-carousel');
 
-    /* Build carousel while pack is still on screen so there's no layout flash */
     carRotation  = 0;
     carTargetRot = 0;
-    carVelocity  = 0;
     buildCarousel();
     applyTrackTransform();
     updateLabel();
 
-    /* Fade pack out */
     packScreen.style.transition = 'opacity 0.28s ease';
     packScreen.style.opacity    = '0';
 
@@ -1093,10 +875,9 @@ function cutToCarousel() {
         packScreen.style.opacity    = '';
         packScreen.style.transition = '';
 
-        /* Fade carousel in */
         carScreen.style.opacity    = '0';
         carScreen.style.display    = 'block';
-        void carScreen.offsetWidth;   /* force reflow so the transition fires */
+        void carScreen.offsetWidth;
         carScreen.style.transition = 'opacity 0.32s ease';
         carScreen.style.opacity    = '1';
         setTimeout(() => { carScreen.style.transition = ''; }, 360);
@@ -1110,62 +891,43 @@ packDragZone.addEventListener('touchstart', (e) => { e.preventDefault(); packDra
 document.addEventListener('touchmove',      (e) => { if (packDragging) { e.preventDefault(); packDragMove(e.touches[0].clientX); } }, { passive: false });
 document.addEventListener('touchend',       ()  => { if (packDragging) packDragCancel(); });
 
-/* ─────────────────────────────────────────────
-   SCREEN 2 — CYLINDER CAROUSEL
-───────────────────────────────────────────── */
+// ── CAROUSEL ──
 const carouselStage = document.getElementById('carousel-stage');
 const carouselTrack = document.getElementById('carousel-track');
 const cardLabel     = document.getElementById('card-label');
 const labelTypeline = document.getElementById('card-label-typeline');
 const labelName     = document.getElementById('card-label-name');
 
-let carRotation  = 0;    // current rotation in degrees
-let carTargetRot = 0;    // snapped target
-let carVelocity  = 0;    // spring velocity
+let carRotation  = 0;
+let carTargetRot = 0;
 let carDragging  = false;
 let carDragX0    = 0;
 let carDragY0    = 0;
 let carDragRot0  = 0;
-let carRAF       = null;
 
-/* Build: create one .c-card per slot, each with front + back face */
 function buildCarousel() {
     carouselTrack.innerHTML = '';
-
-    /* Compute card dimensions synchronously from the same formula as the CSS
-       so negative margins can be applied before first paint, guaranteeing
-       the cylinder origin stays at screen centre. */
     const cardW = Math.max(150, Math.min(window.innerWidth * 0.16875, 225));
     const cardH = cardW * (7 / 5);
 
     CARDS.forEach((data, i) => {
         const slot = document.createElement('div');
-        slot.className    = 'c-card';
+        slot.className     = 'c-card';
         slot.dataset.index = i;
-
-        /* Centre each slot at the track origin via negative margins applied
-           before the 3-D transform so they operate in unrotated parent space. */
         slot.style.marginLeft = `${-cardW / 2}px`;
         slot.style.marginTop  = `${-cardH / 2}px`;
+        slot.style.transform  = `rotateY(${i * CARD_ANGLE}deg) translateZ(${RADIUS}px)`;
 
-        const slotAngle = i * CARD_ANGLE;
-        slot.style.transform =
-            `rotateY(${slotAngle}deg) translateZ(${RADIUS}px)`;
-
-        /* Front face — shows card art */
         const front = document.createElement('div');
         front.className = 'c-face c-face-front';
         const fImg = document.createElement('img');
-        fImg.src = data.img;
-        fImg.alt = data.name;
+        fImg.src = data.img; fImg.alt = data.name;
         front.appendChild(fImg);
 
-        /* Back face — shows cardback, pre-rotated 180° so it faces away when slot faces viewer */
         const back = document.createElement('div');
         back.className = 'c-face c-face-back';
         const bImg = document.createElement('img');
-        bImg.src = 'img/cardback.png';
-        bImg.alt = 'Card Back';
+        bImg.src = 'img/cardback.png'; bImg.alt = 'Card Back';
         back.appendChild(bImg);
 
         slot.appendChild(front);
@@ -1174,45 +936,36 @@ function buildCarousel() {
     });
 }
 
-/* Apply the current rotation to the track */
 function applyTrackTransform() {
-    carouselTrack.style.transform =
-        `rotateX(${TILT_X}deg) rotateY(${carRotation}deg)`;
+    carouselTrack.style.transform = `rotateX(${TILT_X}deg) rotateY(${carRotation}deg)`;
 }
 
-/* Derive which card index is currently at the front */
 function getActiveIndex() {
     const steps = Math.round(-carRotation / CARD_ANGLE);
     return ((steps % N) + N) % N;
 }
 
-/* Update label text + fade + pointer-events on slots */
 function updateLabel() {
-    const steps        = -carRotation / CARD_ANGLE;
-    const nearestStep  = Math.round(steps);
-    const activeIdx    = ((nearestStep % N) + N) % N;
-    const drift        = Math.abs(steps - nearestStep);   // 0 = aligned, 0.5 = halfway
+    const steps       = -carRotation / CARD_ANGLE;
+    const nearestStep = Math.round(steps);
+    const activeIdx   = ((nearestStep % N) + N) % N;
+    const drift       = Math.abs(steps - nearestStep);
 
     labelTypeline.textContent = CARDS[activeIdx].typeLine;
     labelName.textContent     = CARDS[activeIdx].name;
     cardLabel.style.opacity   = Math.max(0, 1 - drift * 3.5);
 
-    /* Enable pointer-events only on front-facing slots so side/back slots don't eat clicks */
     carouselTrack.querySelectorAll('.c-card').forEach((el, i) => {
-        /* Net facing angle of this slot, normalised 0-360 */
-        const raw     = ((i * CARD_ANGLE + carRotation) % 360 + 360) % 360;
-        const fromFront = raw > 180 ? 360 - raw : raw;  // 0=viewer, 180=away
+        const raw      = ((i * CARD_ANGLE + carRotation) % 360 + 360) % 360;
+        const fromFront = raw > 180 ? 360 - raw : raw;
         el.style.pointerEvents = fromFront < 95 ? 'auto' : 'none';
     });
 }
 
-/* CSS-transition snap — ease-out curve is mathematically guaranteed not to overshoot */
 const SNAP_EASE = 'transform 0.38s cubic-bezier(0.22, 1, 0.36, 1)';
 let snapTimer = null;
 
 function snapWithTransition() {
-    cancelAnimationFrame(carRAF);
-    carVelocity = 0;
     carouselTrack.style.transition = SNAP_EASE;
     carRotation = carTargetRot;
     applyTrackTransform();
@@ -1221,39 +974,31 @@ function snapWithTransition() {
     snapTimer = setTimeout(() => { carouselTrack.style.transition = ''; }, 420);
 }
 
-/* Snap to nearest whole-card position */
 function snapToNearest() {
-    const steps  = carRotation / CARD_ANGLE;
-    carTargetRot = Math.round(steps) * CARD_ANGLE;
+    carTargetRot = Math.round(carRotation / CARD_ANGLE) * CARD_ANGLE;
     snapWithTransition();
 }
 
-/* Snap so that card[idx] faces the viewer — takes shortest arc */
 function snapToCard(idx) {
-    const activeIdx = getActiveIndex();
-    const delta_raw = (activeIdx - idx + N) % N;           // 0 to N-1
-    const delta     = delta_raw > N / 2 ? delta_raw - N : delta_raw; // shortest path
-    const curSteps  = Math.round(carRotation / CARD_ANGLE);
-    carTargetRot    = (curSteps + delta) * CARD_ANGLE;
+    const activeIdx  = getActiveIndex();
+    const delta_raw  = (activeIdx - idx + N) % N;
+    const delta      = delta_raw > N / 2 ? delta_raw - N : delta_raw;
+    carTargetRot     = (Math.round(carRotation / CARD_ANGLE) + delta) * CARD_ANGLE;
     snapWithTransition();
 }
 
-/* ── Drag events ── */
 function onCarDragStart(x, y) {
-    /* Kill any active snap transition so drag tracks the cursor instantly */
     clearTimeout(snapTimer);
     carouselTrack.style.transition = '';
     carDragging = true;
     carDragX0   = x;
     carDragY0   = y;
     carDragRot0 = carRotation;
-    cancelAnimationFrame(carRAF);
     carouselStage.classList.add('grabbing');
 }
 
 function onCarDragMove(x) {
     if (!carDragging) return;
-    /* Drag left → card to the right comes forward (natural swipe direction) */
     carRotation = carDragRot0 + (x - carDragX0) * DRAG_DEG;
     applyTrackTransform();
     updateLabel();
@@ -1267,35 +1012,22 @@ function onCarDragEnd(x, y, target) {
     const dx = Math.abs(x - carDragX0);
     const dy = Math.abs(y - carDragY0);
 
-    /* Treat as click if barely moved */
     if (dx < 8 && dy < 8) {
         const slot = target?.closest?.('.c-card');
         if (slot) {
             const clickedIdx = parseInt(slot.dataset.index);
             const activeIdx  = getActiveIndex();
-            if (clickedIdx === activeIdx) {
-                snapToNearest();          /* keep position tidy */
-                openOverlay(activeIdx);
-                return;
-            }
+            if (clickedIdx === activeIdx) { snapToNearest(); openOverlay(activeIdx); return; }
             snapToCard(clickedIdx);
             return;
         }
     }
-
     snapToNearest();
 }
 
-carouselStage.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    onCarDragStart(e.clientX, e.clientY);
-});
-document.addEventListener('mousemove', (e) => {
-    if (carDragging) onCarDragMove(e.clientX);
-});
-document.addEventListener('mouseup', (e) => {
-    if (carDragging) onCarDragEnd(e.clientX, e.clientY, e.target);
-});
+carouselStage.addEventListener('mousedown', (e) => { e.preventDefault(); onCarDragStart(e.clientX, e.clientY); });
+document.addEventListener('mousemove',  (e) => { if (carDragging) onCarDragMove(e.clientX); });
+document.addEventListener('mouseup',    (e) => { if (carDragging) onCarDragEnd(e.clientX, e.clientY, e.target); });
 
 carouselStage.addEventListener('touchstart', (e) => {
     const t = e.touches[0];
@@ -1310,9 +1042,7 @@ document.addEventListener('touchend', (e) => {
     onCarDragEnd(t.clientX, t.clientY, document.elementFromPoint(t.clientX, t.clientY));
 });
 
-/* ─────────────────────────────────────────────
-   OVERLAY
-───────────────────────────────────────────── */
+// ── OVERLAY ──
 const overlay         = document.getElementById('overlay');
 const overlayBackdrop = document.getElementById('overlay-backdrop');
 const overlayCName    = document.getElementById('overlay-card-name');
@@ -1351,11 +1081,9 @@ function closeOverlay() {
     overlayCardInn.style.transform = '';
     overlayShine.style.background  = '';
 
-    /* Fade the carousel back in with the same animation used when opening
-       a card — overlay snaps away, carousel fades in identically */
     const screenCar = document.getElementById('screen-carousel');
     screenCar.classList.remove('revealing');
-    screenCar.offsetHeight; // reflow so animation restarts if called rapidly
+    screenCar.offsetHeight;
     screenCar.classList.add('revealing');
     setTimeout(() => screenCar.classList.remove('revealing'), 300);
 }
