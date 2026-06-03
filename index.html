@@ -252,6 +252,10 @@ html, body {
     overflow: hidden;
 }
 
+#screen-carousel.revealing {
+    animation: overlayFadeIn 0.3s ease both;
+}
+
 /* The perspective container — fills screen minus label zone */
 #carousel-stage {
     position: absolute;
@@ -482,6 +486,8 @@ html, body {
     flex-direction: column;
     overflow-y: auto;
     padding: 3.5rem 3.2rem 3rem;
+    -webkit-user-select: text;
+    user-select: text;
     cursor: default;
 }
 
@@ -513,6 +519,7 @@ html, body {
     font-size: 0.87rem;
     line-height: 1.85;
     color: #1e1a17;
+    white-space: pre-wrap;
     margin: 0;
 }
 
@@ -529,6 +536,7 @@ html, body {
     font-size: 0.85rem;
     line-height: 1.9;
     color: #2e2a27;
+    white-space: pre-wrap;
     font-style: italic;
     border-left: 2px solid var(--purple);
     padding-left: 1.1rem;
@@ -538,6 +546,15 @@ html, body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: rgba(115,31,161,0.3); border-radius: 2px; }
+
+#overlay-info-side *::selection {
+    background: #731fa1;
+    color: #ffffff;
+}
+#overlay-info-side *::-moz-selection {
+    background: #731fa1;
+    color: #ffffff;
+}
 
 /* ── Overlay back button ── */
 #overlay-back {
@@ -1284,8 +1301,8 @@ function openOverlay(idx) {
     overlayFrontImg.src      = d.img;
     overlayCName.textContent = d.name;
     overlayTLine.textContent = d.typeLine;
-    overlayS1.textContent    = d.about;
-    overlayS2.textContent    = d.why;
+    overlayS1.textContent    = d.about.replace(/\n{2,}/g, '\n');
+    overlayS2.textContent    = d.why.replace(/\n{2,}/g, '\n');
     flipHint.textContent     = 'click to flip';
     overlay.classList.add('active');
     overlay.style.display    = 'flex';
@@ -1298,6 +1315,14 @@ function closeOverlay() {
     overlayCardInn.classList.remove('flipped');
     overlayCardInn.style.transform = '';
     overlayShine.style.background  = '';
+
+    /* Fade the carousel back in with the same animation used when opening
+       a card — overlay snaps away, carousel fades in identically */
+    const screenCar = document.getElementById('screen-carousel');
+    screenCar.classList.remove('revealing');
+    screenCar.offsetHeight; // reflow so animation restarts if called rapidly
+    screenCar.classList.add('revealing');
+    setTimeout(() => screenCar.classList.remove('revealing'), 300);
 }
 
 overlayBackdrop.addEventListener('click', closeOverlay);
