@@ -427,6 +427,9 @@ html, body {
     margin-bottom: 2.2rem;
 }
 
+.overlay-section-text a { color: #731fa1; text-decoration: none; font-weight: bold; }
+.overlay-section-text a:hover { color: #731fa1; }
+
 .overlay-section-text {
     font-family: var(--font);
     font-size: 0.87rem;
@@ -574,7 +577,7 @@ const CARDS = [
         img: 'img/card-2.png',
         name: 'Projects',
         typeLine: 'Mizzix of the Izmagnus',
-        about: 'Sentry-XDP (in progress) - A network IDS using eBPF and XDP technology, eBPF/XDP intrusion prevention system that drops flood traffic at the network driver before the kernel ever sees it. Written in C and Go.\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on Linux kernel v6.\nHome Lab SIEM - A full detection engineering pipeline at home. ELK Stack with OTX AlienVault threat intelligence feeds and Jira ticketing integration on a Kali Linux VM.',
+        about: 'Ward-XDP (in progress) - An inline eBPF/XDP intrusion prevention system that drops flood traffic at the network driver before the kernel ever sees it. SYN flood detection is complete and benchmarked at ~51ns per packet. Written in C with a Go control plane. <a href="https://github.com/jonbttt/Ward-XDP" target="_blank" rel="noopener">GitHub</a>\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on kernel 6.x, with every technique mapped to MITRE ATT&CK and its detection surface documented. Presented at SCONES 2026. <a href="https://github.com/jonbttt/rk-veil" target="_blank" rel="noopener">GitHub</a>\nHome Lab SIEM - A detection engineering pipeline at home. ELK with OTX AlienVault threat intelligence feeds and Jira ticketing on a Kali Linux VM.\nStegSweeper - My first security project. Hides an AES-128 encrypted message inside a playable Minesweeper board, where the mine layout is the ciphertext. <a href="https://github.com/jonbttt/stegsweeper" target="_blank" rel="noopener">GitHub</a>',
         why: 'Mizzix\'s ability lets you get an experience counter every time you cast an instant or sorcery with a mana cost greater than the number of counters you have, and those counters reduce the cost of future spells. The more I\'ve done, the easier the next thing becomes. That\'s what projects mean to me.'
     },
     {
@@ -1066,8 +1069,8 @@ function openOverlay(idx) {
     overlayFrontImg.src      = d.img;
     overlayCName.textContent = d.name;
     overlayTLine.textContent = d.typeLine;
-    overlayS1.textContent    = d.about.replace(/\n{2,}/g, '\n');
-    overlayS2.textContent    = d.why.replace(/\n{2,}/g, '\n');
+    overlayS1.innerHTML      = d.about.replace(/\n{2,}/g, '\n');
+    overlayS2.innerHTML      = d.why.replace(/\n{2,}/g, '\n');
     flipHint.textContent     = 'click to flip';
     overlay.classList.add('active');
     overlay.style.display    = 'flex';
