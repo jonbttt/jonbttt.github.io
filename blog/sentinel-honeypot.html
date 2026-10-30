@@ -17,9 +17,9 @@
 
 :root {
     --bg:      #0d0a07;
-    --bg-code: #14100c;
+    --bg-code: #17120e;
     --purple:  #731fa1;
-    --purple-l:#9b4fd6;
+    --purple-l:#b57ae8;
     --white:   #ffffff;
     /* Near-solid, to sit as heavily on --bg as #1e1a17 does on white in the
        portfolio overlay. Anything dimmer reads as a lighter font weight. */
@@ -27,7 +27,7 @@
     --faint:   rgba(255,255,255,0.34);
     --rule:    rgba(115,31,161,0.22);
     --font:    'Averia Serif Libre', Georgia, serif;
-    --mono:    'SF Mono', 'Cascadia Code', Consolas, monospace;
+    --mono:    ui-monospace, SFMono-Regular, Menlo, 'Cascadia Mono', Consolas, monospace;
 }
 
 html { scroll-behavior: smooth; }
@@ -75,12 +75,10 @@ nav {
 }
 
 nav a {
-    font-size: 0.6rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-variant: small-caps;
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
     color: var(--white);
-    opacity: 0.35;
+    opacity: 0.55;
     text-decoration: none;
     border-bottom: none;
     transition: opacity 0.2s;
@@ -114,9 +112,10 @@ header {
 
 /* h1 - matches #overlay-card-name */
 h1 {
-    font-size: clamp(1.7rem, 2.8vw, 2.6rem);
+    font-size: clamp(2.4rem, 5.4vw, 4.1rem);
     font-weight: 700;
-    line-height: 1.05;
+    line-height: 0.98;
+    letter-spacing: -0.02em;
     margin-bottom: 1.8rem;
 }
 
@@ -140,9 +139,7 @@ h2 {
     font-weight: 400;
     letter-spacing: 0.03em;
     line-height: 1.1;
-    margin: 3.6rem 0 1.4rem;
-    padding-top: 1.8rem;
-    border-top: 1px solid var(--rule);
+    margin: 5rem 0 1.5rem;
 }
 
 h3 {
@@ -154,14 +151,10 @@ h3 {
 
 /* h4 - the small-caps label used across the portfolio */
 h4 {
-    font-size: 0.7rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-variant: small-caps;
-    font-weight: 400;
-    color: var(--white);
-    opacity: 0.45;
-    margin: 2rem 0 0.7rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.72);
+    margin: 2.2rem 0 0.7rem;
 }
 
 p { margin-bottom: 1.3rem; color: var(--dim); }
@@ -195,7 +188,6 @@ code {
 
 pre {
     background: var(--bg-code);
-    border: 1px solid var(--rule);
     border-left: 2px solid var(--purple);
     border-radius: 4px;
     padding: 1.1rem 1.3rem;
@@ -222,27 +214,22 @@ figure { margin: 2.2rem 0; }
 figure img {
     width: 100%;
     display: block;
-    border: 1px solid var(--rule);
     border-radius: 4px;
 }
 
 /* figcaption - same small-caps label as the portfolio type lines */
 figcaption {
-    margin-top: 0.8rem;
-    font-size: 0.66rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    font-variant: small-caps;
-    color: var(--white);
-    opacity: 0.4;
+    margin-top: 0.9rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.92rem;
+    color: rgba(255,255,255,0.55);
     text-align: center;
 }
 
 /* footer */
 footer {
-    margin-top: 5rem;
+    margin-top: 6rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--rule);
     display: flex;
     flex-wrap: wrap;
     gap: 1.6rem;
@@ -251,28 +238,46 @@ footer {
 }
 
 footer .byline {
-    font-size: 0.6rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-variant: small-caps;
+    font-size: 0.9rem;
     color: var(--white);
-    opacity: 0.35;
+    opacity: 0.5;
 }
 
 footer .links { display: flex; gap: 1.6rem; }
 
 footer a {
-    font-size: 0.6rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-variant: small-caps;
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
     color: var(--white);
-    opacity: 0.35;
+    opacity: 0.55;
     border-bottom: none;
     transition: opacity 0.2s;
 }
 
 footer a:hover { opacity: 1; }
+
+/* Motion layer — transform/opacity only */
+.reveal {
+    opacity: 0;
+    transform: translateY(22px);
+}
+.reveal.is-in {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+                transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+nav a, footer a { transition: opacity 0.2s ease; }
+a { transition: border-color 0.2s ease, color 0.2s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal, .reveal.is-in {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+    html { scroll-behavior: auto; }
+}
 
 @media (max-width: 680px) {
     nav { padding: 1rem 1.2rem; }
@@ -529,12 +534,12 @@ execute_err=printf a script &gt; filter &amp;&amp; chmod +x &amp;&amp; ./filter 
     attempted to plant.</p>
 
     <figure>
-        <img src="sentinel-honeypot-images/hybrid-analysis.png" alt="Hybrid Analysis anti-virus scan results for the payload">
+        <img src="sentinel-honeypot-images/hybrid-analysis.png" decoding="async" alt="Hybrid Analysis anti-virus scan results for the payload">
         <figcaption>Hybrid Analysis scan results for the payload.</figcaption>
     </figure>
 
     <figure>
-        <img src="sentinel-honeypot-images/abuse-ipdb.png" alt="AbuseIPDB report for the payload host">
+        <img src="sentinel-honeypot-images/abuse-ipdb.png" decoding="async" alt="AbuseIPDB report for the payload host">
         <figcaption>AbuseIPDB reports for the payload host, 5.189.149.171.</figcaption>
     </figure>
 
@@ -767,17 +772,17 @@ execute_err=printf a script &gt; filter &amp;&amp; chmod +x &amp;&amp; ./filter 
     looking through failed SSH incident logs.</p>
 
     <figure>
-        <img src="sentinel-honeypot-images/workbook.png" alt="Sentinel workbook showing attack volume, source IPs and a geo map">
+        <img src="sentinel-honeypot-images/workbook.png" decoding="async" alt="Sentinel workbook showing attack volume, source IPs and a geo map">
         <figcaption>The workbook: attacks over time, top source IPs, and a geo map.</figcaption>
     </figure>
 
     <figure>
-        <img src="sentinel-honeypot-images/SSH-incident.png" alt="A Sentinel incident showing linked host and account entities">
+        <img src="sentinel-honeypot-images/SSH-incident.png" decoding="async" alt="A Sentinel incident showing linked host and account entities">
         <figcaption>An SSH incident with its entities mapped and linked.</figcaption>
     </figure>
 
     <figure>
-        <img src="sentinel-honeypot-images/incident-list.png" alt="The Sentinel incident queue">
+        <img src="sentinel-honeypot-images/incident-list.png" decoding="async" alt="The Sentinel incident queue">
         <figcaption>The incident queue.</figcaption>
     </figure>
 </section>
@@ -905,6 +910,38 @@ execute_err=printf a script &gt; filter &amp;&amp; chmod +x &amp;&amp; ./filter 
 </article>
 
 <script>
+/* Staggered entrance for each section's parts */
+(function () {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const blocks = [...document.querySelectorAll(
+        'article > section > h2, article > section > h3, article > section > h4,' +
+        'article > section > p, article > section > ul, article > section > ol,' +
+        'header > h1, header > .standfirst'
+    )];
+    blocks.forEach((el) => el.classList.add('reveal'));
+
+    // Failsafe: nothing stays hidden, whatever happens with the observer.
+    const revealAll = () => blocks.forEach((el) => el.classList.add('is-in'));
+    window.addEventListener('load', () => setTimeout(revealAll, 1500));
+
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            const sibs = [...(el.parentElement ? el.parentElement.children : [])]
+                .filter((n) => n.classList.contains('reveal'));
+            const i = Math.min(sibs.indexOf(el), 4);
+            el.style.transitionDelay = (i < 0 ? 0 : i * 70) + 'ms';
+            el.classList.add('is-in');
+            io.unobserve(el);
+        });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+
+    blocks.forEach((el) => io.observe(el));
+}());
+
 const progress = document.getElementById('progress');
 document.addEventListener('scroll', () => {
     const h = document.documentElement.scrollHeight - window.innerHeight;

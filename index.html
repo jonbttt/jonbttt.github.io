@@ -28,145 +28,139 @@ html, body {
 }
 
 /* ── SCREEN 1: PACK ── */
+/* The 3D pack is drawn by js/pack.js on a transparent canvas. The stage behind
+   it is plain CSS so it can dim while you cut, as it does in TCG Pocket. */
 #screen-pack {
     position: fixed;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    gap: 1.4rem;
     z-index: 1;
-}
-
-#pack-container {
-    position: relative;
-    width: clamp(150px, 16vw, 220px);
-    border-radius: 8px;
     overflow: hidden;
+    touch-action: none;
+    cursor: grab;
+}
+#screen-pack.is-grabbing { cursor: grabbing; }
+#screen-pack.is-open { cursor: default; }
+
+#pack-env {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
 }
 
-#pack-img {
-    position: relative;
-    display: block;
+#pack-dim {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+#pack-canvas {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: auto;
-    border-radius: 8px;
+    height: 100%;
+    display: block;
+}
+
+/* shown only when WebGL is unavailable */
+#pack-fallback {
+    position: absolute;
+    left: 0; right: 0;
+    top: 56%;
+    margin-inline: auto;
+    height: min(46vh, 520px);
+    translate: 0 -50%;
+    border-radius: 6px;
+}
+#pack-fallback[hidden] { display: none; }
+
+/* Identity block — a visitor must know whose site this is before
+   they work out that the pack opens. */
+#pack-intro {
+    position: absolute;
+    top: clamp(2.5rem, 8vh, 5rem);
+    left: 0; right: 0;
+    margin-inline: auto;
+    width: min(44rem, 100%);
+    padding: 0 1.5rem;
+    text-align: center;
     pointer-events: none;
-    -webkit-user-drag: none;
-    z-index: 1;
+    animation: riseIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) 0.1s backwards;
+    transition: opacity 0.3s ease;
 }
 
-#pack-foil-rainbow {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: 0.15;
-    background: linear-gradient(
-        135deg,
-        hsla(0,100%,70%,1) 0%,
-        hsla(52,100%,70%,1) 14%,
-        hsla(120,100%,70%,1) 28%,
-        hsla(180,100%,70%,1) 43%,
-        hsla(240,100%,70%,1) 57%,
-        hsla(290,100%,70%,1) 71%,
-        hsla(320,100%,70%,1) 85%,
-        hsla(360,100%,70%,1) 100%
-    );
-    transition: transform 0.15s ease;
-    -webkit-mask-image: url('img/pack.png');
-    -webkit-mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-image: url('img/pack.png');
-    mask-size: contain;
-    mask-repeat: no-repeat;
-    mask-position: center;
-}
-
-#pack-foil-highlight {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 35%, transparent 65%);
-    -webkit-mask-image: url('img/pack.png');
-    -webkit-mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-image: url('img/pack.png');
-    mask-size: contain;
-    mask-repeat: no-repeat;
-    mask-position: center;
-}
-
-#pack-drag-zone {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 18%;
-    z-index: 10;
-    cursor: col-resize;
-    border-radius: 8px 8px 0 0;
-}
-
-#pack-drag-zone::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 1px;
-    background: repeating-linear-gradient(90deg,
-        rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 4px,
-        transparent 4px, transparent 8px);
-    pointer-events: none;
-}
-
-#pack-drag-zone::before {
-    content: '';
-    position: absolute;
-    bottom: -3px; left: 6px;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.30);
-    pointer-events: none;
-}
-
-#pack-drag-glow {
-    position: absolute;
-    bottom: 0; left: 0;
-    width: 0; height: 2px;
-    pointer-events: none;
-    display: none;
-    z-index: 11;
-    background: linear-gradient(90deg, rgba(115,31,161,0.5) 0%, #9b4fd6 70%, #c090f0 100%);
-    box-shadow: 0 0 8px 2px rgba(115,31,161,0.85), 0 0 2px 1px #c090f0;
-    border-radius: 1px;
-    transition: none;
-}
-
-#pack-drag-glow::after {
-    content: '';
-    position: absolute;
-    right: -6px; top: 50%;
-    transform: translateY(-50%);
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #fff 0%, #c090f0 35%, rgba(115,31,161,0.5) 65%, transparent 100%);
-    filter: blur(1.5px);
-}
-
-#pack-hint {
+#pack-name {
     font-family: var(--font);
-    font-size: 0.58rem;
-    letter-spacing: 0.22em;
+    font-size: clamp(2.6rem, 6.4vw, 4.5rem);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.015em;
     color: var(--white);
-    opacity: 0.28;
+}
+
+#pack-role {
+    font-family: var(--font);
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    line-height: 1.6;
+    color: rgba(255,255,255,0.68);
+    margin-top: 0.85rem;
+    max-width: 27rem;
+    text-wrap: balance;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#pack-open-btn {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: clamp(1.5rem, 5vh, 3rem);
+    margin-inline: auto;
+    width: max-content;
+    font-family: var(--font);
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    color: var(--white);
+    background: var(--purple);
+    border: 0;
+    border-radius: 999px;
+    padding: 0.85rem 1.75rem;
+    cursor: pointer;
+    animation: riseIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) 0.45s backwards;
+    transition: background-color 0.18s ease, scale 0.16s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease;
+}
+#pack-open-btn:hover { background: #8a2bbf; }
+#pack-open-btn:active { scale: 0.97; }
+#pack-open-btn:focus-visible { outline: 2px solid #c090f0; outline-offset: 3px; }
+/* On the close-up the pack itself is the control; the button stays in the tab
+   order so keyboards can still open it, and reappears when focused. */
+#pack-open-btn.is-sr:not(:focus-visible) {
+    opacity: 0;
     pointer-events: none;
-    margin-top: 0.2rem;
-    font-variant: small-caps;
+}
+
+#pack-trace {
+    position: absolute;
+    left: 0; right: 0;
+    top: 30%;
+    text-align: center;
+    font-family: var(--font);
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.72);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+#pack-trace.is-on { opacity: 1; }
+#pack-trace:not(.is-on) { transition-duration: 0.06s; }   /* gone the instant you touch */
+
+@keyframes riseIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #pack-intro, #pack-open-btn { animation: none; }
 }
 
 /* ── SCREEN 2: CAROUSEL ── */
@@ -203,9 +197,12 @@ html, body {
     will-change: transform;
 }
 
+/* The ring sits back by its radius, so the front card is drawn at its own
+   size. Pushed forward through the perspective instead, it was a smaller
+   raster magnified ~1.7x, and looked soft. */
 .c-card {
     position: absolute;
-    width: clamp(150px, 16.875vw, 225px);
+    width: clamp(260px, 29.2vw, 390px);
     aspect-ratio: 5 / 7;
     transform-style: preserve-3d;
     cursor: pointer;
@@ -244,8 +241,8 @@ html, body {
 
 #card-label-typeline {
     font-family: var(--font);
-    font-size: 0.58rem;
-    letter-spacing: 0.22em;
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     font-variant: small-caps;
     color: var(--white);
@@ -272,11 +269,10 @@ html, body {
 
 #contact-links a {
     font-family: var(--font);
-    font-size: 0.6rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
     color: var(--white);
-    opacity: 0.35;
+    opacity: 0.55;
     text-decoration: none;
     transition: opacity 0.2s;
 }
@@ -410,7 +406,7 @@ html, body {
 #overlay-card-name {
     font-family: var(--font);
     font-size: clamp(1.7rem, 2.8vw, 2.6rem);
-    font-weight: 700;
+    font-weight: 400;
     color: #0d0a07;
     line-height: 1.05;
     margin-bottom: 0.45rem;
@@ -438,6 +434,19 @@ html, body {
     white-space: pre-wrap;
     margin: 0;
 }
+
+/* Pull requests to other people's projects, from js/contributions.js, which a
+   GitHub Action (.github/workflows/contributions.yml) regenerates daily. */
+#overlay-contrib-title {
+    font-family: var(--font);
+    font-size: 0.87rem;
+    font-weight: 700;
+    color: #0d0a07;
+    margin: 1.4rem 0 0.2rem;
+}
+
+#overlay-contrib-list { list-style: none; white-space: normal; }
+#overlay-contrib-list li + li { margin-top: 0.25rem; }
 
 .overlay-divider {
     height: 1px;
@@ -505,15 +514,18 @@ html, body {
 
 <!-- SCREEN 1: PACK -->
 <div id="screen-pack">
-    <div id="pack-container">
-        <img id="pack-img" src="img/pack.png" alt="Booster Pack" draggable="false" />
-        <div id="pack-foil-rainbow"></div>
-        <div id="pack-foil-highlight"></div>
-        <div id="pack-drag-zone">
-            <div id="pack-drag-glow"></div>
-        </div>
+    <div id="pack-env" aria-hidden="true">
+        <div id="pack-dim"></div>
     </div>
-    <p id="pack-hint">SLIDE TO OPEN</p>
+    <canvas id="pack-canvas" aria-hidden="true"></canvas>
+    <img id="pack-fallback" src="img/pack-front.jpg" alt="" hidden>
+    <div id="pack-intro">
+        <h1 id="pack-name">Jonathan Thamrin</h1>
+        <p id="pack-role">Final-year computer science student at UNSW specialising in
+        security engineering. Looking for graduate roles in cybersecurity and software.</p>
+    </div>
+    <p id="pack-trace" aria-hidden="true">Trace line to open</p>
+    <button id="pack-open-btn" type="button">Open the pack</button>
 </div>
 
 <!-- SCREEN 2: CAROUSEL -->
@@ -555,12 +567,17 @@ html, body {
             <div id="overlay-card-name"></div>
             <div id="overlay-type-line"></div>
             <p id="overlay-section1" class="overlay-section-text"></p>
+            <div id="overlay-contrib" hidden>
+                <h3 id="overlay-contrib-title">Open-source contributions</h3>
+                <ul id="overlay-contrib-list" class="overlay-section-text"></ul>
+            </div>
             <div class="overlay-divider"></div>
             <p id="overlay-section2" class="overlay-section-why"></p>
         </div>
     </div>
 </div>
 
+<script src="js/contributions.js"></script>
 <script>
 'use strict';
 
@@ -577,7 +594,8 @@ const CARDS = [
         img: 'img/card-2.png',
         name: 'Projects',
         typeLine: 'Mizzix of the Izmagnus',
-        about: 'Sentinel Honeypot - <a href="./blog/sentinel-honeypot.html">Writeup</a>\nWard-XDP (in progress) - An inline eBPF/XDP intrusion prevention system that drops flood traffic at the network driver before the kernel ever sees it. SYN flood detection is complete and benchmarked at ~51ns per packet. Written in C with a Go control plane. <a href="https://github.com/jonbttt/Ward-XDP" target="_blank" rel="noopener">GitHub</a>\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on kernel 6.x, with every technique mapped to MITRE ATT&CK and its detection surface documented. Presented at SCONES 2026. <a href="https://github.com/jonbttt/rk-veil" target="_blank" rel="noopener">GitHub</a>\nHome Lab SIEM - A detection engineering pipeline at home. ELK with OTX AlienVault threat intelligence feeds and Jira ticketing on a Kali Linux VM.\nStegSweeper - My first security project. Hides an AES-128 encrypted message inside a playable Minesweeper board, where the mine layout is the ciphertext. <a href="https://github.com/jonbttt/stegsweeper" target="_blank" rel="noopener">GitHub</a>',
+        about: 'Sentinel Honeypot - A high-interaction SSH honeypot on Azure running real OpenSSH, wired to Microsoft Sentinel through auditd and a repurposed build of rk-veil acting as a kernel-space keylogger. Five custom KQL detection rules, each with entity mapping and MITRE ATT&CK tagging. It caught a live IoT botnet intrusion within hours of going up. <a href="./blog/sentinel-honeypot.html">Writeup</a>\nWard-XDP (in progress) - An inline eBPF/XDP intrusion prevention system that drops flood traffic at the network driver before the kernel ever sees it. SYN flood detection is complete and benchmarked at ~51ns per packet. Written in C with a Go control plane. <a href="https://github.com/jonbttt/Ward-XDP" target="_blank" rel="noopener">GitHub</a>\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on kernel 6.x, with every technique mapped to MITRE ATT&CK and its detection surface documented. Presented at SCONES 2026. <a href="https://github.com/jonbttt/rk-veil" target="_blank" rel="noopener">GitHub</a>\nStegSweeper - My first security project. Hides an AES-128 encrypted message inside a playable Minesweeper board, where the mine layout is the ciphertext. <a href="https://github.com/jonbttt/stegsweeper" target="_blank" rel="noopener">GitHub</a>',
+        contributions: true,
         why: 'Mizzix\'s ability lets you get an experience counter every time you cast an instant or sorcery with a mana cost greater than the number of counters you have, and those counters reduce the cost of future spells. The more I\'ve done, the easier the next thing becomes.'
     },
     {
@@ -619,280 +637,51 @@ const CARDS = [
 const N          = CARDS.length;
 const CARD_ANGLE = 360 / N;
 const TILT_X     = -5;
-const RADIUS     = 380;
+const RADIUS     = 658;
 const DRAG_DEG   = 0.36;
 
-// ── PACK OPENING ──
-const packContainer = document.getElementById('pack-container');
-const packImg       = document.getElementById('pack-img');
-const packFoilR     = document.getElementById('pack-foil-rainbow');
-const packFoilH     = document.getElementById('pack-foil-highlight');
-const packDragZone  = document.getElementById('pack-drag-zone');
-const packDragGlow  = document.getElementById('pack-drag-glow');
+// ── PACK → CAROUSEL HAND-OFF ──
+// js/pack.js runs the 3D pack. Once the first card has risen out of it, the
+// carousel is built underneath, the card glides into its front slot, and the
+// pack screen hands over.
+const carScreen = document.getElementById('screen-carousel');
+let handoffFront = null;
 
-let packOpened   = false;
-let packDragging = false;
-const PACK_THRESHOLD = 0.98;
-
-// Cut-spark canvas state
-let cutCanvas   = null, cutCtx = null;
-let cutParts    = [];
-let cutRAF      = null;
-let cutCursorX  = 0, cutCursorY = 0;
-let cutLineLeft = 0;
-let cutMoved    = false;
-
-function startCutCanvas() {
-    cutCanvas = document.createElement('canvas');
-    cutCanvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;';
-    cutCanvas.width  = window.innerWidth;
-    cutCanvas.height = window.innerHeight;
-    document.body.appendChild(cutCanvas);
-    cutCtx   = cutCanvas.getContext('2d');
-    cutParts = [];
-    cutMoved = false;
-    tickCutCanvas();
-}
-
-function stopCutCanvas() {
-    cancelAnimationFrame(cutRAF);
-    if (cutCanvas) { cutCanvas.remove(); cutCanvas = null; cutCtx = null; }
-    cutParts = [];
-    cutMoved = false;
-}
-
-function spawnCutSparks() {
-    const openedW = cutCursorX - cutLineLeft;
-    if (openedW < 2) return;
-    const sx    = cutLineLeft + Math.random() * openedW;
-    const sy    = cutCursorY;
-    const up    = Math.random() > 0.5;
-    const vx    = (Math.random() - 0.5) * 0.5;
-    const vy    = (up ? -1 : 1) * (0.25 + Math.random() * 0.9);
-    const white = Math.random() > 0.45;
-    cutParts.push({
-        x: sx, y: sy, vx, vy,
-        life  : 1,
-        decay : 0.016 + Math.random() * 0.014,
-        len   : 5 + Math.random() * 12,
-        col   : white ? [255,255,255] : (Math.random() > 0.5 ? [192,144,240] : [220,160,255]),
-    });
-}
-
-function tickCutCanvas() {
-    cutRAF = requestAnimationFrame(tickCutCanvas);
-    if (!cutCtx) return;
-
-    if (packDragging && cutMoved) {
-        spawnCutSparks();
-        cutMoved = false;
-    }
-
-    cutCtx.clearRect(0, 0, cutCanvas.width, cutCanvas.height);
-    cutCtx.globalCompositeOperation = 'lighter';
-
-    const openedW = cutCursorX - cutLineLeft;
-    if (packDragging && openedW > 1) {
-        const lineGrd = cutCtx.createLinearGradient(cutLineLeft, 0, cutCursorX, 0);
-        lineGrd.addColorStop(0,   'rgba(115,31,161,0)');
-        lineGrd.addColorStop(0.3, 'rgba(155,79,214,0.35)');
-        lineGrd.addColorStop(1,   'rgba(220,160,255,0.7)');
-        cutCtx.beginPath();
-        cutCtx.moveTo(cutLineLeft, cutCursorY);
-        cutCtx.lineTo(cutCursorX,  cutCursorY);
-        cutCtx.strokeStyle = lineGrd;
-        cutCtx.lineWidth   = 4;
-        cutCtx.stroke();
-        cutCtx.beginPath();
-        cutCtx.moveTo(cutLineLeft, cutCursorY);
-        cutCtx.lineTo(cutCursorX,  cutCursorY);
-        cutCtx.strokeStyle = 'rgba(255,255,255,0.55)';
-        cutCtx.lineWidth   = 1;
-        cutCtx.stroke();
-    }
-
-    const alive = [];
-    for (const p of cutParts) {
-        p.vx *= 0.93; p.vy *= 0.93;
-        p.x  += p.vx; p.y  += p.vy;
-        p.life -= p.decay;
-        if (p.life <= 0) continue;
-        alive.push(p);
-
-        const a  = p.life;
-        const sp = Math.hypot(p.vx, p.vy) || 0.001;
-        const nx = p.vx / sp, ny = p.vy / sp;
-        const grd = cutCtx.createLinearGradient(p.x - nx * p.len, p.y - ny * p.len, p.x, p.y);
-        const [r, g, b] = p.col;
-        grd.addColorStop(0, `rgba(${r},${g},${b},0)`);
-        grd.addColorStop(1, `rgba(${r},${g},${b},${a * 0.85})`);
-        cutCtx.beginPath();
-        cutCtx.moveTo(p.x - nx * p.len, p.y - ny * p.len);
-        cutCtx.lineTo(p.x, p.y);
-        cutCtx.strokeStyle = grd;
-        cutCtx.lineWidth   = 1.1;
-        cutCtx.stroke();
-        cutCtx.beginPath();
-        cutCtx.arc(p.x, p.y, 1.0, 0, Math.PI * 2);
-        cutCtx.fillStyle = `rgba(255,255,255,${a * 0.8})`;
-        cutCtx.fill();
-    }
-    cutCtx.globalCompositeOperation = 'source-over';
-    cutParts = alive;
-}
-
-// Foil shimmer
-let idleT = 0, idleRAF = null, isIdle = true, idleTimer = null;
-
-function updatePackFoil(mx, my) {
-    const angle = 130 + (mx - 50) * 0.22;
-    const hue   = (mx / 100 * 160 + my / 100 * 80) % 360;
-    packFoilR.style.background =
-        `linear-gradient(${angle}deg,` +
-        `hsla(${hue},100%,68%,1) 0%,` +
-        `hsla(${(hue + 52) % 360},100%,70%,1) 14%,` +
-        `hsla(${(hue + 120) % 360},100%,70%,1) 28%,` +
-        `hsla(${(hue + 180) % 360},100%,70%,1) 43%,` +
-        `hsla(${(hue + 240) % 360},100%,70%,1) 57%,` +
-        `hsla(${(hue + 295) % 360},100%,70%,1) 71%,` +
-        `hsla(${(hue + 330) % 360},100%,70%,1) 85%,` +
-        `hsla(${hue},100%,68%,1) 100%)`;
-    packFoilR.style.transform = '';
-    packFoilH.style.background =
-        `radial-gradient(circle at ${mx}% ${my}%,` +
-        `rgba(255,255,255,0.22) 0%,` +
-        `hsla(${hue},100%,75%,0.10) 20%,` +
-        `hsla(${(hue + 80) % 360},100%,70%,0.05) 40%,` +
-        `transparent 60%)`;
-}
-
-function idleTick() {
-    if (!isIdle || packOpened) return;
-    idleT += 0.007;
-    const mx = 50 + 36 * Math.sin(idleT * 1.15);
-    const my = 50 + 28 * Math.sin(idleT * 0.73 + 0.6);
-    updatePackFoil(mx, my);
-    idleRAF = requestAnimationFrame(idleTick);
-}
-function goIdle()   { isIdle = true;  cancelAnimationFrame(idleRAF); idleRAF = requestAnimationFrame(idleTick); }
-function stopIdle() { isIdle = false; cancelAnimationFrame(idleRAF); }
-
-goIdle();
-
-function resetPackTilt() {
-    packContainer.style.transition = 'transform 0.5s ease';
-    packContainer.style.transform  = '';
-}
-
-document.addEventListener('mousemove', (e) => {
-    if (packOpened) return;
-    const rect  = packContainer.getBoundingClientRect();
-    const cx    = rect.left + rect.width  / 2;
-    const cy    = rect.top  + rect.height / 2;
-    const dx    = (e.clientX - cx) / (rect.width  / 2);
-    const dy    = (e.clientY - cy) / (rect.height / 2);
-    const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
-
-    if (!packDragging) {
-        packContainer.style.transition = 'transform 0.08s ease-out';
-        packContainer.style.transform  =
-            `perspective(1200px) rotateY(${clamp(dx * 8, -8, 8)}deg)` +
-            ` rotateX(${clamp(-dy * 8, -8, 8)}deg)`;
-    }
-
-    const mx = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
-    const my = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
-    stopIdle();
-    updatePackFoil(mx, my);
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(goIdle, 1600);
-});
-
-document.addEventListener('mouseleave', () => {
-    if (!packOpened) { resetPackTilt(); goIdle(); }
-});
-
-function packDragStart(x) {
-    if (packOpened) return;
-    const rect  = packContainer.getBoundingClientRect();
-    cutLineLeft = rect.left;
-    cutCursorX  = rect.left;
-    cutCursorY  = rect.top + rect.height * 0.18;
-    packDragging = true;
-    packDragGlow.style.display = 'block';
-    packDragGlow.style.width   = '0px';
-    startCutCanvas();
-    stopIdle();
-}
-
-function packDragMove(x) {
-    if (!packDragging || packOpened) return;
-    const rect = packContainer.getBoundingClientRect();
-    const relX = x - rect.left;
-    const prog = Math.max(0, Math.min(1, relX / rect.width));
-    packDragGlow.style.width = Math.max(0, relX) + 'px';
-    const newX = Math.max(cutLineLeft, Math.min(x, rect.right));
-    if (newX !== cutCursorX) {
-        cutCursorX = newX;
-        cutCursorY = rect.top + rect.height * 0.18;
-        cutMoved   = true;
-    }
-    if (prog >= PACK_THRESHOLD) completePack();
-}
-
-function packDragCancel() {
-    if (!packDragging) return;
-    packDragging = false;
-    packDragGlow.style.display = 'none';
-    packDragGlow.style.width   = '0px';
-    stopCutCanvas();
-    resetPackTilt();
-    goIdle();
-}
-
-function completePack() {
-    if (packOpened) return;
-    packOpened   = true;
-    packDragging = false;
-    packDragGlow.style.display = 'none';
-    stopCutCanvas();
-    resetPackTilt();
-    cutToCarousel();
-}
-
-function cutToCarousel() {
-    const packScreen = document.getElementById('screen-pack');
-    const carScreen  = document.getElementById('screen-carousel');
-
-    carRotation  = 0;
-    carTargetRot = 0;
-    buildCarousel();
-    applyTrackTransform();
-    updateLabel();
-
-    packScreen.style.transition = 'opacity 0.28s ease';
-    packScreen.style.opacity    = '0';
-
-    setTimeout(() => {
-        packScreen.style.display    = 'none';
-        packScreen.style.opacity    = '';
-        packScreen.style.transition = '';
-
-        carScreen.style.opacity    = '0';
-        carScreen.style.display    = 'block';
-        void carScreen.offsetWidth;
-        carScreen.style.transition = 'opacity 0.32s ease';
-        carScreen.style.opacity    = '1';
-        setTimeout(() => { carScreen.style.transition = ''; }, 360);
-    }, 290);
-}
-
-packDragZone.addEventListener('mousedown',  (e) => { e.preventDefault(); packDragStart(e.clientX); });
-document.addEventListener('mousemove',      (e) => { if (packDragging) packDragMove(e.clientX); });
-document.addEventListener('mouseup',        ()  => { if (packDragging) packDragCancel(); });
-packDragZone.addEventListener('touchstart', (e) => { e.preventDefault(); packDragStart(e.touches[0].clientX); }, { passive: false });
-document.addEventListener('touchmove',      (e) => { if (packDragging) { e.preventDefault(); packDragMove(e.touches[0].clientX); } }, { passive: false });
-document.addEventListener('touchend',       ()  => { if (packDragging) packDragCancel(); });
+window.PackHandoff = {
+    tiltX: TILT_X,
+    prepare(hideFront) {
+        carRotation  = 0;
+        carTargetRot = 0;
+        buildCarousel();
+        applyTrackTransform();
+        updateLabel();
+        carScreen.style.opacity = '0';
+        carScreen.style.display = 'block';
+        handoffFront = carouselTrack.querySelector('.c-card[data-index="0"] .c-face-front');
+        if (hideFront) handoffFront.style.visibility = 'hidden';
+        // Where the front card's centre lands and how wide it is there, from
+        // the ring's geometry. Its bounding box is a little bigger than the
+        // card, since the tilt brings the top edge forward.
+        const st = carouselStage.getBoundingClientRect();
+        const t  = TILT_X * Math.PI / 180;
+        const p  = parseFloat(getComputedStyle(carouselStage).perspective);
+        const s  = p / (p - RADIUS * (Math.cos(t) - 1));
+        return {
+            x: st.left + st.width / 2,
+            y: st.top + st.height / 2 - RADIUS * Math.sin(t) * s,
+            width: handoffFront.offsetWidth * s,
+        };
+    },
+    reveal(ms) {
+        carScreen.style.transition = `opacity ${ms}ms ease`;
+        carScreen.style.opacity = '1';
+    },
+    finish() {
+        if (handoffFront) handoffFront.style.visibility = '';
+        document.getElementById('screen-pack').style.display = 'none';
+        carScreen.style.transition = '';
+    },
+};
 
 // ── CAROUSEL ──
 const carouselStage = document.getElementById('carousel-stage');
@@ -910,7 +699,7 @@ let carDragRot0  = 0;
 
 function buildCarousel() {
     carouselTrack.innerHTML = '';
-    const cardW = Math.max(150, Math.min(window.innerWidth * 0.16875, 225));
+    const cardW = Math.max(260, Math.min(window.innerWidth * 0.292, 390));
     const cardH = cardW * (7 / 5);
 
     CARDS.forEach((data, i) => {
@@ -940,7 +729,7 @@ function buildCarousel() {
 }
 
 function applyTrackTransform() {
-    carouselTrack.style.transform = `rotateX(${TILT_X}deg) rotateY(${carRotation}deg)`;
+    carouselTrack.style.transform = `translateZ(${-RADIUS}px) rotateX(${TILT_X}deg) rotateY(${carRotation}deg)`;
 }
 
 function getActiveIndex() {
@@ -1058,19 +847,46 @@ const overlayCardSide = document.getElementById('overlay-card-side');
 const overlayShine    = document.getElementById('overlay-card-shine');
 const flipHint        = document.getElementById('overlay-flip-hint');
 
+const overlayContrib  = document.getElementById('overlay-contrib');
+const contribList     = document.getElementById('overlay-contrib-list');
+const monthFmt        = new Intl.DateTimeFormat('en-AU', { month: 'short', year: 'numeric' });
+
+// One line each, in the projects' "Name - description. Link" shape. Built as
+// text nodes, since the titles come from GitHub.
+function renderContributions(list) {
+    contribList.replaceChildren(...list.map((c) => {
+        const li = document.createElement('li');
+        const status = c.status === 'merged'
+            ? `Merged ${monthFmt.format(new Date(c.date))}`
+            : 'In review';
+        const a = document.createElement('a');
+        a.href = c.url; a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = `PR #${c.number}`;
+        li.append(`${c.repo} - ${c.title.replace(/\.$/, '')}. ${status}. `, a);
+        return li;
+    }));
+    overlayContrib.hidden = !list.length;
+}
+
 let isFlipped = false;
+
+// Every state uses the same transform list, so transitions interpolate angle by
+// angle. The tilt comes first so it stays in screen space: after the flip it
+// otherwise acted in the card's mirrored frame and tipped the wrong way.
+const cardTransform = (rx = 0, ry = 0) => `rotateX(${rx}deg) rotateY(${(isFlipped ? 180 : 0) + ry}deg)`;
 
 function openOverlay(idx) {
     const d = CARDS[idx];
     isFlipped = false;
     overlayCardInn.classList.remove('flipped');
-    overlayCardInn.style.transform  = '';
+    overlayCardInn.style.transform  = cardTransform();
     overlayCardInn.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
     overlayFrontImg.src      = d.img;
     overlayCName.textContent = d.name;
     overlayTLine.textContent = d.typeLine;
     overlayS1.innerHTML      = d.about.replace(/\n{2,}/g, '\n');
     overlayS2.innerHTML      = d.why.replace(/\n{2,}/g, '\n');
+    renderContributions(d.contributions ? window.CONTRIBUTIONS || [] : []);
     flipHint.textContent     = 'click to flip';
     overlay.classList.add('active');
     overlay.style.display    = 'flex';
@@ -1081,7 +897,7 @@ function closeOverlay() {
     overlay.style.display   = 'none';
     isFlipped               = false;
     overlayCardInn.classList.remove('flipped');
-    overlayCardInn.style.transform = '';
+    overlayCardInn.style.transform = cardTransform();
     overlayShine.style.background  = '';
 
     const screenCar = document.getElementById('screen-carousel');
@@ -1100,7 +916,7 @@ overlayCardSide.addEventListener('click', (e) => {
     isFlipped = !isFlipped;
     overlayCardInn.classList.toggle('flipped', isFlipped);
     overlayCardInn.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
-    overlayCardInn.style.transform  = isFlipped ? 'rotateY(180deg)' : '';
+    overlayCardInn.style.transform  = cardTransform();
 });
 
 overlayCardSide.addEventListener('mousemove', (e) => {
@@ -1111,9 +927,7 @@ overlayCardSide.addEventListener('mousemove', (e) => {
     const rx    = clamp(-dy * 12, -12, 12);
     const ry    = clamp( dx * 12, -12, 12);
     overlayCardInn.style.transition = 'transform 0.08s ease-out';
-    overlayCardInn.style.transform  = isFlipped
-        ? `rotateY(${180 + ry}deg) rotateX(${rx}deg)`
-        : `rotateY(${ry}deg) rotateX(${rx}deg)`;
+    overlayCardInn.style.transform  = cardTransform(rx, ry);
     const mx  = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
     const my  = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
     const hue = (parseFloat(mx) / 100 * 300 + parseFloat(my) / 100 * 150) % 360;
@@ -1127,11 +941,13 @@ overlayCardSide.addEventListener('mousemove', (e) => {
 
 overlayCardSide.addEventListener('mouseleave', () => {
     overlayCardInn.style.transition = 'transform 0.5s ease';
-    overlayCardInn.style.transform  = isFlipped ? 'rotateY(180deg)' : '';
+    overlayCardInn.style.transform  = cardTransform();
     overlayShine.style.background   = '';
 });
 
 document.getElementById('overlay-info-side').addEventListener('click', (e) => e.stopPropagation());
 </script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="js/pack.js"></script>
 </body>
 </html>

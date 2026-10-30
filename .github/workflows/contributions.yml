@@ -1,0 +1,47 @@
+name: Update contributions
+
+# Refreshes js/contributions.js (pull requests to other people's public repos,
+# shown on the Projects card) once a day, and on demand from the Actions tab.
+on:
+  schedule:
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: contributions
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch contributions
+        run: node .github/scripts/contributions.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and rebuild the site if anything changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- js/contributions.js; then
+            echo "No change."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add js/contributions.js
+          git commit -m 'Update contributions'
+          git push
+          # A push made with GITHUB_TOKEN doesn't start the Pages build by itself.
+          gh api --method POST "repos/${{ github.repository }}/pages/builds"
