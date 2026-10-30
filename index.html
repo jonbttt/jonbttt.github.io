@@ -521,8 +521,8 @@ html, body {
     <img id="pack-fallback" src="img/pack-front.jpg" alt="" hidden>
     <div id="pack-intro">
         <h1 id="pack-name">Jonathan Thamrin</h1>
-        <p id="pack-role">Final-year computer science student at UNSW specialising in
-        security engineering. Looking for graduate roles in cybersecurity and software.</p>
+        <p id="pack-role">UNSW computer science graduate specialising in security
+        engineering. Looking for graduate roles in cybersecurity and software.</p>
     </div>
     <p id="pack-trace" aria-hidden="true">Trace line to open</p>
     <button id="pack-open-btn" type="button">Open the pack</button>
@@ -587,14 +587,14 @@ const CARDS = [
         img: 'img/card-1.png',
         name: 'About Me',
         typeLine: 'Goblin Engineer',
-        about: 'Hey, I\'m Jonathan! I\'m currently a final-year CS student at UNSW specialising in Security Engineering, graduating September 2026. Previously Software Engineer at The Golfer Network and AI Engineer at PT Wide Technologies Indonesia. Now, I\'m looking for grad roles in cybersecurity and software development. Nice to meet ya!',
+        about: 'Hey, I\'m Jonathan! I graduated from UNSW in September 2026 with a CS degree specialising in Security Engineering. Previously Software Engineer at The Golfer Network and AI Engineer at PT Wide Technologies Indonesia. Now, I\'m looking for grad roles in cybersecurity and software development. Nice to meet ya!',
         why: 'I chose Goblin Engineer as my face card because its flavor truly fits me. He\'s a tinkerer. The art shows someone surrounded by their work, actively in the middle of it. In terms of function, the Goblin Engineer puts an artifact into the graveyard and recurs a different one from it; build something, break it, pull out something more useful. This is my process within security engineering, and something I genuinely love doing.'
     },
     {
         img: 'img/card-2.png',
         name: 'Projects',
         typeLine: 'Mizzix of the Izmagnus',
-        about: 'Sentinel Honeypot - A high-interaction SSH honeypot on Azure running real OpenSSH, wired to Microsoft Sentinel through auditd and a repurposed build of rk-veil acting as a kernel-space keylogger. Five custom KQL detection rules, each with entity mapping and MITRE ATT&CK tagging. It caught a live IoT botnet intrusion within hours of going up. <a href="./blog/sentinel-honeypot.html">Writeup</a>\nWard-XDP (in progress) - An inline eBPF/XDP intrusion prevention system that drops flood traffic at the network driver before the kernel ever sees it. SYN flood detection is complete and benchmarked at ~51ns per packet. Written in C with a Go control plane. <a href="https://github.com/jonbttt/Ward-XDP" target="_blank" rel="noopener">GitHub</a>\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on kernel 6.x, with every technique mapped to MITRE ATT&CK and its detection surface documented. Presented at SCONES 2026. <a href="https://github.com/jonbttt/rk-veil" target="_blank" rel="noopener">GitHub</a>\nStegSweeper - My first security project. Hides an AES-128 encrypted message inside a playable Minesweeper board, where the mine layout is the ciphertext. <a href="https://github.com/jonbttt/stegsweeper" target="_blank" rel="noopener">GitHub</a>',
+        about: 'Sentinel Honeypot - A high-interaction SSH honeypot on Azure running real OpenSSH, wired to Microsoft Sentinel through auditd and a repurposed build of rk-veil acting as a kernel-space keylogger. Five custom KQL detection rules, each with entity mapping and MITRE ATT&CK tagging. It caught a live IoT botnet intrusion within hours of going up. <a href="./blog/sentinel-honeypot.html">Writeup</a>\nWard-XDP (in progress) - An inline eBPF/XDP intrusion prevention system that drops attack traffic at the network driver before the kernel ever sees it. SYN flood, port scan, and ARP spoofing detection are complete, with the SYN flood path benchmarked at ~51ns per packet. Written in C with a Go control plane. <a href="https://github.com/jonbttt/Ward-XDP" target="_blank" rel="noopener">GitHub</a>\nrk-veil - A Linux kernel module rootkit built from scratch. Syscall hooking, process hiding, and privilege escalation on kernel 6.x, with every technique mapped to MITRE ATT&CK and its detection surface documented. Presented at SCONES 2026. <a href="https://github.com/jonbttt/rk-veil" target="_blank" rel="noopener">GitHub</a>\nStegSweeper - My first security project. Hides an AES-128 encrypted message inside a playable Minesweeper board, where the mine layout is the ciphertext. <a href="https://github.com/jonbttt/stegsweeper" target="_blank" rel="noopener">GitHub</a>',
         contributions: true,
         why: 'Mizzix\'s ability lets you get an experience counter every time you cast an instant or sorcery with a mana cost greater than the number of counters you have, and those counters reduce the cost of future spells. The more I\'ve done, the easier the next thing becomes.'
     },
@@ -609,7 +609,7 @@ const CARDS = [
         img: 'img/card-4.png',
         name: 'Lifting',
         typeLine: 'Zilortha, Strength Incarnate',
-        about: 'After a busy day, I always love training. I\'m an amateur powerlifter in the 72kg weight class with around 2.5 yrs of training. I plan on competing soon this year in powerlifting and joining an amateur bodybuilding comp sometime next year.',
+        about: 'After a busy day, I always love training. I\'m an amateur powerlifter in the 74kg weight class with around 3 yrs of training. I plan on competing in powerlifting and, later on, joining an amateur bodybuilding comp.',
         why: 'Zilortha makes your creatures deal damage based on power rather than toughness, raw strength over endurance. That\'s what powerlifting is to me. Also, I\'m a Godzilla fan.'
     },
     {
@@ -623,7 +623,7 @@ const CARDS = [
         img: 'img/card-6.png',
         name: 'Travelling',
         typeLine: 'Explore',
-        about: 'Originally from Jakarta, now based in Sydney. I\'ve travelled across Asia and parts of Europe. In the coming months, I really hope I\'ll be able to see more of Australia (I\'d love to go hiking around Kosciuszko National Park and visit Uluru one day).',
+        about: 'Originally from Jakarta, now based in Sydney. I\'ve travelled across Asia and parts of Europe, but my dream adventure would be horse trekking through Krygyzstan and Mongolia.',
         why: 'This card speaks for itself, both in terms of the card\'s function and flavor.'
     }
 ];
