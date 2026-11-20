@@ -3,6 +3,5 @@
 window.CONTRIBUTIONS = [
   {"repo":"sched-ext/scx","title":"scx_lavd: Limit test_top_level_has_all_cpus to the host's CPU IDs","number":3998,"url":"https://github.com/sched-ext/scx/pull/3998","status":"merged","date":"2026-11-18"},
   {"repo":"sched-ext/scx","title":"scx_utils, scx_lavd: Fix startup panic with offline CPUs","number":3969,"url":"https://github.com/sched-ext/scx/pull/3969","status":"merged","date":"2026-11-18"},
-  {"repo":"sched-ext/scx","title":"scx_lavd: Don't fully boost the slice of affinitized tasks","number":3940,"url":"https://github.com/sched-ext/scx/pull/3940","status":"open","date":"2026-10-27"},
   {"repo":"canonical/netplan","title":"parse: reject address labels longer than 15 characters (LP: #2102708)","number":619,"url":"https://github.com/canonical/netplan/pull/619","status":"open","date":"2026-10-06"}
 ];
